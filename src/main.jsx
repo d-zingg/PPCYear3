@@ -5,7 +5,7 @@ import App from "./App";
 import "./index.css";
 
 createRoot(document.getElementById("root")).render(
-  <BrowserRouter basename="/PPCYear3">
+  <BrowserRouter>
     <App />
   </BrowserRouter>
 );
