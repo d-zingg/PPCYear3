@@ -4,7 +4,7 @@ import { UserContext } from '../context/UserContext'
 import { ClassesContext } from '../context/ClassesContext'
 import { PostsContext } from '../context/PostsContext'
 import { AssignmentsContext } from '../context/AssignmentsContext'
-import ClassManagementEnhanced from './ClassManagementEnhanced'
+import ClassManagementEnhanced from '../features/admin/ClassManagementEnhanced'
 
 export default function StudentDashboard() {
   // StudentDashboard: dashboard for students with navbar, sidebar, and main content.
@@ -245,25 +245,30 @@ export default function StudentDashboard() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50">
       {/* Navbar */}
-      <nav className="bg-gradient-to-r from-green-600 via-teal-600 to-cyan-600 text-white px-6 py-4 flex items-center justify-between shadow-xl">
+      <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
+          <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
             <span className="text-2xl">🎓</span>
           </div>
           <div>
-            <div className="text-2xl font-bold">PPC Student</div>
-            <div className="text-xs text-green-100">Learning Portal</div>
+            <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">PPC Student</div>
+            <div className="text-xs text-gray-500 font-medium">Learning Portal</div>
           </div>
         </div>
         <div className="relative w-64">
+          <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </div>
           <input
             type="text"
             placeholder="Search courses, assignments..."
             value={searchQuery}
             onChange={handleSearch}
-            className="w-full px-4 py-2 rounded text-gray-800"
+            className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 text-gray-800 border border-gray-200 focus:border-purple-500 focus:ring-4 focus:ring-purple-100 outline-none transition-all"
           />
           {searchResults.length > 0 && (
             <div className="absolute top-full left-0 w-full bg-white text-gray-800 rounded shadow-lg mt-1 z-50 max-h-64 overflow-y-auto">
@@ -330,23 +335,28 @@ export default function StudentDashboard() {
 
       <div className="flex flex-1">
         {/* Sidebar */}
-        <aside className="w-64 bg-gray-800 text-white p-6">
-          <h3 className="text-lg font-bold mb-6">Student Menu</h3>
+        <aside className="w-72 bg-white/50 backdrop-blur-sm border-r border-gray-200/50 p-6">
+          <div className="mb-8">
+            <h3 className="text-xs uppercase font-bold text-gray-400 tracking-wider mb-1">Navigation</h3>
+            <div className="h-1 w-12 bg-gradient-to-r from-purple-600 to-pink-600 rounded-full"></div>
+          </div>
           <ul className="space-y-2">
             <li>
               <button
                 onClick={() => setActiveSection('dashboard')}
-                className={`w-full text-left px-4 py-2 rounded transition ${activeSection === 'dashboard' ? 'bg-purple-600' : 'hover:bg-gray-700'}`}
+                className={`w-full text-left px-5 py-3.5 rounded-xl transition-all font-medium group ${activeSection === 'dashboard' ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30' : 'hover:bg-white/80 text-gray-700 hover:shadow-md'}`}
               >
-                📊 Dashboard
+                <span className="text-xl mr-3">📊</span>
+                <span className="group-hover:translate-x-1 inline-block transition-transform">Dashboard</span>
               </button>
             </li>
             <li>
               <button
                 onClick={() => setActiveSection('courses')}
-                className={`w-full text-left px-4 py-2 rounded transition ${activeSection === 'courses' ? 'bg-purple-600' : 'hover:bg-gray-700'}`}
+                className={`w-full text-left px-5 py-3.5 rounded-xl transition-all font-medium group ${activeSection === 'courses' ? 'bg-gradient-to-r from-purple-600 to-pink-600 text-white shadow-lg shadow-purple-500/30' : 'hover:bg-white/80 text-gray-700 hover:shadow-md'}`}
               >
-                📚 My Courses
+                <span className="text-xl mr-3">📚</span>
+                <span className="group-hover:translate-x-1 inline-block transition-transform">My Courses</span>
               </button>
             </li>
             <li>

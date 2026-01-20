@@ -1,27 +1,32 @@
-import React, { useContext, useState } from 'react';
-import { UsersContext } from '../context/UsersContext';
-import { UserContext } from '../context/UserContext';
+import React, { useContext, useState } from "react";
+import { UsersContext } from "../../context/UsersContext";
+import { UserContext } from "../../context/UserContext";
 
 export default function UserManagement() {
-  const { users = [], addUser, updateUser, deleteUser } = useContext(UsersContext) || {};
+  const {
+    users = [],
+    addUser,
+    updateUser,
+    deleteUser,
+  } = useContext(UsersContext) || {};
   const { user: currentUser } = useContext(UserContext) || {};
   const [editingUser, setEditingUser] = useState(null);
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    role: '',
-    schoolName: '',
-    phone: '',
+    name: "",
+    email: "",
+    role: "",
+    schoolName: "",
+    phone: "",
   });
 
   const handleEdit = (user) => {
     setEditingUser(user);
     setFormData({
-      name: user.name || '',
-      email: user.email || '',
-      role: user.role || '',
-      schoolName: user.schoolName || '',
-      phone: user.phone || '',
+      name: user.name || "",
+      email: user.email || "",
+      role: user.role || "",
+      schoolName: user.schoolName || "",
+      phone: user.phone || "",
     });
   };
 
@@ -32,11 +37,11 @@ export default function UserManagement() {
       addUser && addUser(formData);
     }
     setEditingUser(null);
-    setFormData({ name: '', email: '', role: '', schoolName: '', phone: '' });
+    setFormData({ name: "", email: "", role: "", schoolName: "", phone: "" });
   };
 
   const handleDelete = (email) => {
-    if (window.confirm('Are you sure you want to delete this user?')) {
+    if (window.confirm("Are you sure you want to delete this user?")) {
       deleteUser && deleteUser(email);
     }
   };
@@ -57,27 +62,33 @@ export default function UserManagement() {
       {editingUser && (
         <div className="bg-white p-6 rounded shadow mb-6">
           <h3 className="text-lg font-semibold mb-4">
-            {editingUser.email ? 'Edit User' : 'Add New User'}
+            {editingUser.email ? "Edit User" : "Add New User"}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <input
               type="text"
               placeholder="Name"
               value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, name: e.target.value })
+              }
               className="border p-2 rounded"
             />
             <input
               type="email"
               placeholder="Email"
               value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, email: e.target.value })
+              }
               className="border p-2 rounded"
               disabled={!!editingUser.email}
             />
             <select
               value={formData.role}
-              onChange={(e) => setFormData({ ...formData, role: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, role: e.target.value })
+              }
               className="border p-2 rounded"
             >
               <option value="">Select Role</option>
@@ -89,14 +100,18 @@ export default function UserManagement() {
               type="text"
               placeholder="School Name"
               value={formData.schoolName}
-              onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, schoolName: e.target.value })
+              }
               className="border p-2 rounded"
             />
             <input
               type="text"
               placeholder="Phone"
               value={formData.phone}
-              onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+              onChange={(e) =>
+                setFormData({ ...formData, phone: e.target.value })
+              }
               className="border p-2 rounded"
             />
           </div>
@@ -143,8 +158,12 @@ export default function UserManagement() {
               <tr key={user.email}>
                 <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
                 <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap capitalize">{user.role}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{user.schoolName}</td>
+                <td className="px-6 py-4 whitespace-nowrap capitalize">
+                  {user.role}
+                </td>
+                <td className="px-6 py-4 whitespace-nowrap">
+                  {user.schoolName}
+                </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <button
                     onClick={() => handleEdit(user)}

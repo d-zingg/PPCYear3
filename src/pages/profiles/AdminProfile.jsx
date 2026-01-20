@@ -1,66 +1,62 @@
-import React, { useContext, useState } from 'react'
-import { UserContext } from '../context/UserContext'
-import { PostsContext } from '../context/PostsContext'
+import React, { useContext, useState } from "react";
+import { UserContext } from "../../context/UserContext";
+import { PostsContext } from "../../context/PostsContext";
 
-export default function UserProfile() {
-  const { user, updateUser } = useContext(UserContext) || {}
-  const { getPostsByUser, toggleLike, toggleFavorite, addComment } = useContext(PostsContext) || {}
-  const [isEditing, setIsEditing] = useState(false)
-  const getInitialFormData = () => {
-    const baseData = {
-      name: user?.name || '',
-      phone: user?.phone || '',
-      dob: user?.dob || '',
-      schoolName: user?.schoolName || '',
-      profileImage: user?.profileImage || ''
-    }
+export default function AdminProfile() {
+  const { user, updateUser } = useContext(UserContext) || {};
+  const { getPostsByUser, toggleLike, toggleFavorite, addComment } =
+    useContext(PostsContext) || {};
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    name: user?.name || "",
+    phone: user?.phone || "",
+    dob: user?.dob || "",
+    schoolName: user?.schoolName || "",
+    profileImage: user?.profileImage || "",
+  });
 
-    if (user?.role === 'student') {
-      return { ...baseData, grade: user?.grade || '', classSection: user?.classSection || '' }
-    } else if (user?.role === 'teacher') {
-      return { ...baseData, subject: user?.subject || '', department: user?.department || '' }
-    } else if (user?.role === 'admin') {
-      return { ...baseData, department: user?.department || '' }
-    }
-    return baseData
-  }
-
-  const [formData, setFormData] = useState(getInitialFormData())
-  const userPosts = user && getPostsByUser ? getPostsByUser(user.email || user.id) : []
+  const userPosts =
+    user && getPostsByUser ? getPostsByUser(user.email || user.id) : [];
 
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="bg-white p-6 rounded shadow">No user signed in.</div>
       </div>
-    )
+    );
   }
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
-    setFormData(prev => ({ ...prev, [name]: value }))
-  }
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleImageChange = (e) => {
-    const file = e.target.files[0]
+    const file = e.target.files[0];
     if (file) {
-      const reader = new FileReader()
+      const reader = new FileReader();
       reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, profileImage: reader.result }))
-      }
-      reader.readAsDataURL(file)
+        setFormData((prev) => ({ ...prev, profileImage: reader.result }));
+      };
+      reader.readAsDataURL(file);
     }
-  }
+  };
 
   const handleSave = () => {
-    updateUser(formData)
-    setIsEditing(false)
-  }
+    updateUser(formData);
+    setIsEditing(false);
+  };
 
   const handleCancel = () => {
-    setFormData(getInitialFormData())
-    setIsEditing(false)
-  }
+    setFormData({
+      name: user.name || "",
+      phone: user.phone || "",
+      dob: user.dob || "",
+      schoolName: user.schoolName || "",
+      profileImage: user.profileImage || "",
+    });
+    setIsEditing(false);
+  };
 
   return (
     <div className="min-h-screen p-8 bg-gray-50">
@@ -77,7 +73,7 @@ export default function UserProfile() {
                 />
               ) : (
                 <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-2xl font-semibold">
-                  {(user.name || user.email || 'U')[0]}
+                  {(user.name || user.email || "A")[0]}
                 </div>
               )}
               <div>
@@ -91,7 +87,9 @@ export default function UserProfile() {
                     placeholder="Name"
                   />
                 ) : (
-                  <div className="text-2xl font-bold">{user.name || user.email}</div>
+                  <div className="text-2xl font-bold">
+                    {user.name || user.email}
+                  </div>
                 )}
                 <div className="text-sm text-gray-600">{user.role}</div>
               </div>
@@ -145,7 +143,9 @@ export default function UserProfile() {
                   placeholder="School Name"
                 />
               ) : (
-                <span className="ml-2">{user.schoolName || 'Not specified'}</span>
+                <span className="ml-2">
+                  {user.schoolName || "Not specified"}
+                </span>
               )}
             </div>
             <div>
@@ -160,7 +160,7 @@ export default function UserProfile() {
                   placeholder="Phone Number"
                 />
               ) : (
-                <span className="ml-2">{user.phone || 'Not specified'}</span>
+                <span className="ml-2">{user.phone || "Not specified"}</span>
               )}
             </div>
             <div>
@@ -174,99 +174,12 @@ export default function UserProfile() {
                   className="ml-2 border rounded px-2 py-1"
                 />
               ) : (
-                <span className="ml-2">{user.dob || 'Not specified'}</span>
+                <span className="ml-2">{user.dob || "Not specified"}</span>
               )}
             </div>
-            <div><strong>Email:</strong> <span className="ml-2">{user.email}</span></div>
-
-            {/* Role-specific fields */}
-            {user.role === 'student' && (
-              <>
-                <div>
-                  <strong>Grade:</strong>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      name="grade"
-                      value={formData.grade}
-                      onChange={handleInputChange}
-                      className="ml-2 border rounded px-2 py-1 w-full"
-                      placeholder="Grade Level"
-                    />
-                  ) : (
-                    <span className="ml-2">{user.grade || 'Not specified'}</span>
-                  )}
-                </div>
-                <div>
-                  <strong>Class Section:</strong>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      name="classSection"
-                      value={formData.classSection}
-                      onChange={handleInputChange}
-                      className="ml-2 border rounded px-2 py-1 w-full"
-                      placeholder="Class Section"
-                    />
-                  ) : (
-                    <span className="ml-2">{user.classSection || 'Not specified'}</span>
-                  )}
-                </div>
-              </>
-            )}
-
-            {user.role === 'teacher' && (
-              <>
-                <div>
-                  <strong>Subject:</strong>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      name="subject"
-                      value={formData.subject}
-                      onChange={handleInputChange}
-                      className="ml-2 border rounded px-2 py-1 w-full"
-                      placeholder="Teaching Subject"
-                    />
-                  ) : (
-                    <span className="ml-2">{user.subject || 'Not specified'}</span>
-                  )}
-                </div>
-                <div>
-                  <strong>Department:</strong>
-                  {isEditing ? (
-                    <input
-                      type="text"
-                      name="department"
-                      value={formData.department}
-                      onChange={handleInputChange}
-                      className="ml-2 border rounded px-2 py-1 w-full"
-                      placeholder="Department"
-                    />
-                  ) : (
-                    <span className="ml-2">{user.department || 'Not specified'}</span>
-                  )}
-                </div>
-              </>
-            )}
-
-            {user.role === 'admin' && (
-              <div>
-                <strong>Department:</strong>
-                {isEditing ? (
-                  <input
-                    type="text"
-                    name="department"
-                    value={formData.department}
-                    onChange={handleInputChange}
-                    className="ml-2 border rounded px-2 py-1 w-full"
-                    placeholder="Administrative Department"
-                  />
-                ) : (
-                  <span className="ml-2">{user.department || 'Not specified'}</span>
-                )}
-              </div>
-            )}
+            <div>
+              <strong>Email:</strong> <span className="ml-2">{user.email}</span>
+            </div>
           </div>
         </div>
 
@@ -291,12 +204,12 @@ export default function UserProfile() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span>{(post.poster?.name || 'A')[0]}</span>
+                        <span>{(post.poster?.name || "A")[0]}</span>
                       )}
                     </div>
                     <div>
                       <div className="font-semibold">
-                        {post.poster?.name || 'Anonymous'}
+                        {post.poster?.name || "Anonymous"}
                       </div>
                       <div className="text-xs text-gray-500">
                         {new Date(post.timestamp).toLocaleString()}
@@ -336,12 +249,15 @@ export default function UserProfile() {
 
                     <button
                       onClick={() => {
-                        const text = prompt('Add a comment')
+                        const text = prompt("Add a comment");
                         if (text)
                           addComment(post.id, {
                             text,
-                            author: { name: user.name || user.email, id: user.email || user.id }
-                          })
+                            author: {
+                              name: user.name || user.email,
+                              id: user.email || user.id,
+                            },
+                          });
                       }}
                       className="hover:text-green-600"
                     >
@@ -349,10 +265,15 @@ export default function UserProfile() {
                     </button>
 
                     <button
-                      onClick={() => toggleFavorite(post.id, user.email || user.id)}
+                      onClick={() =>
+                        toggleFavorite(post.id, user.email || user.id)
+                      }
                       className="hover:text-yellow-500 flex items-center gap-1"
                     >
-                      {(post.favoritedBy || []).includes(user.email || user.id) ? '★' : '☆'} <span>{post.favorites || 0}</span>
+                      {(post.favoritedBy || []).includes(user.email || user.id)
+                        ? "★"
+                        : "☆"}{" "}
+                      <span>{post.favorites || 0}</span>
                     </button>
                   </div>
 
@@ -362,8 +283,8 @@ export default function UserProfile() {
                       {post.comments.map((c) => (
                         <div key={c.id} className="text-sm">
                           <span className="font-semibold">
-                            {c.author?.name || 'Anon'}:
-                          </span>{' '}
+                            {c.author?.name || "Anon"}:
+                          </span>{" "}
                           {c.text}
                         </div>
                       ))}
@@ -380,5 +301,5 @@ export default function UserProfile() {
         </div>
       </div>
     </div>
-  )
+  );
 }

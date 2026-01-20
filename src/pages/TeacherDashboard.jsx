@@ -5,8 +5,8 @@ import { UserContext } from '../context/UserContext';
 import { PostsContext } from '../context/PostsContext';
 import { AssignmentsContext } from '../context/AssignmentsContext';
 import { ClassesContext } from '../context/ClassesContext';
-import ClassManagementEnhanced from './ClassManagementEnhanced';
-import { btnAccent } from './ui/styles';
+import ClassManagementEnhanced from '../features/admin/ClassManagementEnhanced';
+import { btnAccent } from '../components/ui/styles';
 
 export default function TeacherDashboard() {
   // --- State and Context Initialization ---
@@ -507,16 +507,16 @@ export default function TeacherDashboard() {
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
+    <div className="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
       {/* Navbar */}
-      <nav className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 text-white px-6 py-4 flex items-center justify-between shadow-xl">
+      <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-white rounded-full flex items-center justify-center">
-            <span className="text-2xl">👨‍🏫</span>
+          <div className="w-12 h-12 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+            <span className="text-2xl">🎓</span>
           </div>
           <div>
-            <div className="text-2xl font-bold">PPC Teacher</div>
-            <div className="text-xs text-purple-100">Teaching Portal</div>
+            <div className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">PPC Teacher</div>
+            <div className="text-xs text-gray-500 font-medium">Teaching Portal</div>
           </div>
         </div>
         <div className="relative w-64">
@@ -600,39 +600,46 @@ export default function TeacherDashboard() {
 
       <div className="flex flex-1">
         {/* Sidebar */}
-        <aside className="w-64 bg-gray-800 text-white p-6">
-          <h3 className="text-lg font-bold mb-6">Teacher Menu</h3>
+        <aside className="w-72 bg-white/50 backdrop-blur-sm border-r border-gray-200/50 p-6">
+          <div className="mb-8">
+            <h3 className="text-xs uppercase font-bold text-gray-400 tracking-wider mb-1">Navigation</h3>
+            <div className="h-1 w-12 bg-gradient-to-r from-emerald-600 to-teal-600 rounded-full"></div>
+          </div>
           <ul className="space-y-2">
             <li>
               <button
                 onClick={() => { setActiveSection('dashboard'); setEditingAssignment(null); }}
-                className={`w-full text-left px-4 py-2 rounded transition ${activeSection === 'dashboard' ? 'bg-green-600' : 'hover:bg-gray-700'}`}
+                className={`w-full text-left px-5 py-3.5 rounded-xl transition-all font-medium group ${activeSection === 'dashboard' ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/30' : 'hover:bg-white/80 text-gray-700 hover:shadow-md'}`}
               >
-                📊 Dashboard
+                <span className="text-xl mr-3">📊</span>
+                <span className="group-hover:translate-x-1 inline-block transition-transform">Dashboard</span>
               </button>
             </li>
             <li>
               <button
                 onClick={() => { setActiveSection('classes'); setEditingAssignment(null); }}
-                className={`w-full text-left px-4 py-2 rounded transition ${activeSection === 'classes' ? 'bg-green-600' : 'hover:bg-gray-700'}`}
+                className={`w-full text-left px-5 py-3.5 rounded-xl transition-all font-medium group ${activeSection === 'classes' ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/30' : 'hover:bg-white/80 text-gray-700 hover:shadow-md'}`}
               >
-                📚 My Classes
+                <span className="text-xl mr-3">📚</span>
+                <span className="group-hover:translate-x-1 inline-block transition-transform">My Classes</span>
               </button>
             </li>
             <li>
               <button
                 onClick={() => { setActiveSection('assignments'); setEditingAssignment(null); }}
-                className={`w-full text-left px-4 py-2 rounded transition ${activeSection === 'assignments' || activeSection === 'postAssignment' ? 'bg-green-600' : 'hover:bg-gray-700'}`}
+                className={`w-full text-left px-5 py-3.5 rounded-xl transition-all font-medium group ${activeSection === 'assignments' || activeSection === 'postAssignment' ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/30' : 'hover:bg-white/80 text-gray-700 hover:shadow-md'}`}
               >
-                ✏️ Assignments
+                <span className="text-xl mr-3">✏️</span>
+                <span className="group-hover:translate-x-1 inline-block transition-transform">Assignments</span>
               </button>
             </li>
             <li>
               <button
                 onClick={() => { setActiveSection('grades'); setEditingAssignment(null); }}
-                className={`w-full text-left px-4 py-2 rounded transition ${activeSection === 'grades' ? 'bg-green-600' : 'hover:bg-gray-700'}`}
+                className={`w-full text-left px-5 py-3.5 rounded-xl transition-all font-medium group ${activeSection === 'grades' ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-500/30' : 'hover:bg-white/80 text-gray-700 hover:shadow-md'}`}
               >
-                📝 Grades
+                <span className="text-xl mr-3">📝</span>
+                <span className="group-hover:translate-x-1 inline-block transition-transform">Grades</span>
               </button>
             </li>
           </ul>
