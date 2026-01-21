@@ -6,6 +6,7 @@ import UserHome from "./pages/UserHome";
 import AdminSchool from "./pages/AdminSchool";
 import TeacherDashboard from "./pages/TeacherDashboard";
 import StudentDashboard from "./pages/StudentDashboard";
+import Settings from "./pages/Settings";
 
 import UserProfile from "./pages/profiles/UserProfile";
 import StudentProfile from "./pages/profiles/StudentProfile";
@@ -126,6 +127,16 @@ export default function App() {
                   element={
                     <ProtectedRoute>
                       <PublicProfile />
+                    </ProtectedRoute>
+                  }
+                />
+
+                {/* Settings - Protected */}
+                <Route
+                  path="/settings"
+                  element={
+                    <ProtectedRoute>
+                      <Settings />
                     </ProtectedRoute>
                   }
                 />

@@ -4,19 +4,42 @@ import { UserContext } from "../../context/UserContext";
 
 export default function UserManagement() {
   const {
-    users = [],
+    allUsers = [],
     addUser,
     updateUser,
-    deleteUser,
+    removeUser,
   } = useContext(UsersContext) || {};
   const { user: currentUser } = useContext(UserContext) || {};
   const [editingUser, setEditingUser] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [roleFilter, setRoleFilter] = useState("all");
   const [formData, setFormData] = useState({
     name: "",
     email: "",
+    password: "",
     role: "",
     schoolName: "",
     phone: "",
+  });
+
+  // Remove duplicate users by email
+  const uniqueUsers = allUsers.reduce((acc, user) => {
+    if (!acc.find(u => u.email === user.email)) {
+      acc.push(user);
+    }
+    return acc;
+  }, []);
+
+  // Filter users by search query and role
+  const filteredUsers = uniqueUsers.filter(user => {
+    const matchesSearch = 
+      user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.schoolName?.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    const matchesRole = roleFilter === "all" || user.role === roleFilter;
+    
+    return matchesSearch && matchesRole;
   });
 
   const handleEdit = (user) => {
@@ -24,6 +47,7 @@ export default function UserManagement() {
     setFormData({
       name: user.name || "",
       email: user.email || "",
+      password: "",
       role: user.role || "",
       schoolName: user.schoolName || "",
       phone: user.phone || "",
@@ -34,15 +58,20 @@ export default function UserManagement() {
     if (editingUser) {
       updateUser && updateUser(editingUser.email, formData);
     } else {
-      addUser && addUser(formData);
+      try {
+        addUser && addUser(formData);
+      } catch (error) {
+        alert(error.message || 'Failed to add user');
+        return;
+      }
     }
     setEditingUser(null);
-    setFormData({ name: "", email: "", role: "", schoolName: "", phone: "" });
+    setFormData({ name: "", email: "", password: "", role: "", schoolName: "", phone: "" });
   };
 
   const handleDelete = (email) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
-      deleteUser && deleteUser(email);
+      removeUser && removeUser(email);
     }
   };
 
@@ -50,13 +79,38 @@ export default function UserManagement() {
     <div className="p-6">
       <h2 className="text-2xl font-bold mb-6">User Management</h2>
 
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-center gap-4">
         <button
           onClick={() => setEditingUser({})}
           className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-500 shadow-sm transition"
         >
           Add New User
         </button>
+
+        <div className="flex-1 min-w-[200px] max-w-md">
+          <input
+            type="text"
+            placeholder="Search by name, email, or school..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+          />
+        </div>
+
+        <select
+          value={roleFilter}
+          onChange={(e) => setRoleFilter(e.target.value)}
+          className="border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        >
+          <option value="all">All Roles</option>
+          <option value="admin">Admin</option>
+          <option value="teacher">Teacher</option>
+          <option value="student">Student</option>
+        </select>
+
+        <div className="text-sm text-gray-600">
+          Showing {filteredUsers.length} of {uniqueUsers.length} users
+        </div>
       </div>
 
       {editingUser && (
@@ -83,6 +137,15 @@ export default function UserManagement() {
               }
               className="border p-2 rounded"
               disabled={!!editingUser.email}
+            />
+            <input
+              type="password"
+              placeholder={editingUser.email ? "New Password (leave blank to keep current)" : "Password"}
+              value={formData.password}
+              onChange={(e) =>
+                setFormData({ ...formData, password: e.target.value })
+              }
+              className="border p-2 rounded"
             />
             <select
               value={formData.role}
@@ -154,32 +217,40 @@ export default function UserManagement() {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {users.map((user) => (
-              <tr key={user.email}>
-                <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
-                <td className="px-6 py-4 whitespace-nowrap capitalize">
-                  {user.role}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  {user.schoolName}
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <button
-                    onClick={() => handleEdit(user)}
-                    className="text-blue-600 hover:text-blue-900 mr-2"
-                  >
-                    Edit
-                  </button>
-                  <button
-                    onClick={() => handleDelete(user.email)}
-                    className="text-red-600 hover:text-red-900"
-                  >
-                    Delete
-                  </button>
+            {filteredUsers.length > 0 ? (
+              filteredUsers.map((user) => (
+                <tr key={user.email}>
+                  <td className="px-6 py-4 whitespace-nowrap">{user.name}</td>
+                  <td className="px-6 py-4 whitespace-nowrap">{user.email}</td>
+                  <td className="px-6 py-4 whitespace-nowrap capitalize">
+                    {user.role}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    {user.schoolName}
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <button
+                      onClick={() => handleEdit(user)}
+                      className="text-blue-600 hover:text-blue-900 mr-2"
+                    >
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDelete(user.email)}
+                      className="text-red-600 hover:text-red-900"
+                    >
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan="5" className="px-6 py-8 text-center text-gray-500">
+                  No users found matching your search criteria
                 </td>
               </tr>
-            ))}
+            )}
           </tbody>
         </table>
       </div>

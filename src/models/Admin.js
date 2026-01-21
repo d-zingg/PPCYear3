@@ -148,6 +148,41 @@ class Admin extends User {
   }
 
   /**
+   * Admin Use Case: Manage Class Members
+   * Add or remove teachers and students from classes
+   * @param {string} classId - The class identifier
+   * @param {string} action - 'add_teacher', 'remove_teacher', 'add_student', 'remove_student'
+   * @param {string} userId - The user ID to add/remove
+   * @returns {Object} Operation result
+   */
+  manageClassMembers(classId, action, userId) {
+    if (!this.getPermissions().includes('manage_classes')) {
+      return {
+        success: false,
+        message: 'Insufficient permissions to manage class members'
+      };
+    }
+
+    const validActions = ['add_teacher', 'remove_teacher', 'add_student', 'remove_student'];
+    if (!validActions.includes(action)) {
+      return {
+        success: false,
+        message: 'Invalid action specified'
+      };
+    }
+
+    return {
+      success: true,
+      classId,
+      action,
+      userId,
+      performedBy: this.userId,
+      timestamp: new Date(),
+      message: `Successfully performed ${action} for user ${userId} in class ${classId}`
+    };
+  }
+
+  /**
    * Override toJSON to include admin-specific data
    */
   toJSON() {

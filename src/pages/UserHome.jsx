@@ -14,6 +14,23 @@ export default function UserHome() {
     useContext(PostsContext) || { posts: [] };
   const { classes } = useContext(ClassesContext) || { classes: [] };
 
+  // Refresh user data from localStorage
+  const [currentUserData, setCurrentUserData] = useState(null);
+  
+  useEffect(() => {
+    // Load fresh user data from localStorage
+    const userEmail = user?.email || localStorage.getItem('ppc_user');
+    if (userEmail) {
+      const users = JSON.parse(localStorage.getItem('ppc_users') || '[]');
+      const userData = users.find(u => u.email === userEmail);
+      if (userData) {
+        setCurrentUserData(userData);
+      }
+    }
+  }, [user]);
+
+  const displayUser = currentUserData || user;
+
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
@@ -195,7 +212,7 @@ export default function UserHome() {
       {/* Navbar */}
       <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-50">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-xl transform hover:scale-105 transition-transform">
+          <div className="w-auto h-16 transform hover:scale-105 transition-transform">
             <img src={smpLogo} alt="SMP Logo" className="w-full h-full object-cover" />
           </div>
           <div>
@@ -230,19 +247,25 @@ export default function UserHome() {
 
           <button
             onClick={() => navigate("/profile")}
-            className="w-11 h-11 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-blue-500 flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100 shadow-md hover:shadow-lg transition-all transform hover:scale-105"
+            className="flex items-center gap-2 px-3 py-2 rounded-xl hover:bg-gray-50 border border-gray-200 hover:border-blue-500 transition-all group"
           >
-            {user?.avatar ? (
-              <img
-                src={user.avatar}
-                alt="profile"
-                className="w-full h-full object-cover"
-              />
-            ) : (
-              <span className="text-sm font-bold text-blue-700">
-                {((user && (user.name || user.email)) || "U")[0]}
-              </span>
-            )}
+            <div className="w-9 h-9 rounded-lg overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 flex items-center justify-center bg-gradient-to-br from-blue-100 to-purple-100 shadow-sm transition-all">
+              {(displayUser?.avatar || displayUser?.profileImage) ? (
+                <img
+                  src={displayUser?.avatar || displayUser?.profileImage}
+                  alt="profile"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <span className="text-sm font-bold text-blue-700">
+                  {((displayUser && (displayUser.name || displayUser.email)) || "U")[0].toUpperCase()}
+                </span>
+              )}
+            </div>
+            <div className="text-left hidden md:block">
+              <div className="text-sm font-semibold text-gray-800">{displayUser?.name || "User"}</div>
+              <div className="text-xs text-gray-500 capitalize">{displayUser?.role || "Member"}</div>
+            </div>
           </button>
 
           <div className="relative">
@@ -257,7 +280,10 @@ export default function UserHome() {
 
             {menuOpen && (
               <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-2xl border border-gray-100 overflow-hidden z-50">
-                <button className="block w-full text-left px-5 py-3 hover:bg-gray-50 transition-colors font-medium text-gray-700">
+                <button 
+                  onClick={() => { setMenuOpen(false); navigate('/settings'); }}
+                  className="block w-full text-left px-5 py-3 hover:bg-gray-50 transition-colors font-medium text-gray-700"
+                >
                   ⚙️ Settings
                 </button>
                 <button

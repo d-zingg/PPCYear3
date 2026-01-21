@@ -235,7 +235,7 @@ class DatabaseManager {
   updateUser(userId, updatedData) {
     try {
       const users = this.getAllUsers();
-      const index = users.findIndex(u => u.userId === userId || u.id === userId);
+      const index = users.findIndex(u => u.userId === userId || u.id === userId || u.email === userId);
 
       if (index === -1) {
         return {
@@ -274,7 +274,7 @@ class DatabaseManager {
   deleteUser(userId) {
     try {
       const users = this.getAllUsers();
-      const filtered = users.filter(u => u.userId !== userId && u.id !== userId);
+      const filtered = users.filter(u => u.userId !== userId && u.id !== userId && u.email !== userId);
 
       if (filtered.length === users.length) {
         return {

@@ -6,6 +6,7 @@ import { PostsContext } from '../context/PostsContext'
 import { AssignmentsContext } from '../context/AssignmentsContext'
 import ClassManagementEnhanced from '../features/admin/ClassManagementEnhanced'
 import { UserProfileMini } from '../components/LoadingSkeleton'
+import smpLogo from '../image/smp-logo.png'
 
 export default function StudentDashboard() {
   // StudentDashboard: dashboard for students with navbar, sidebar, and main content.
@@ -433,7 +434,7 @@ export default function StudentDashboard() {
       {/* Navbar */}
       <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-50">
         <div className="flex items-center gap-4">
-          <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-xl transform hover:scale-105 transition-transform">
+          <div class="w-auto h-16  transform hover:scale-105 transition-transform">
             <img src={smpLogo} alt="SMP Logo" className="w-full h-full object-cover" />
           </div>
           <div>
@@ -504,7 +505,10 @@ export default function StudentDashboard() {
             </button>
             {menuOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50">
-                <button className="block w-full text-left px-4 py-3 hover:bg-gray-50 transition border-b">
+                <button 
+                  onClick={() => { setMenuOpen(false); navigate('/settings'); }}
+                  className="block w-full text-left px-4 py-3 hover:bg-gray-50 transition border-b"
+                >
                   ⚙️ Settings
                 </button>
                 <button
@@ -570,17 +574,14 @@ export default function StudentDashboard() {
           {activeSection === 'dashboard' ? (
             <div>
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-lg font-semibold">Your Posts</h3>
-                <button
-                  onClick={openPostModal}
-                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition font-semibold"
-                >
-                  ✏️ Create Post
-                </button>
+                <div>
+                  <h3 className="text-lg font-semibold text-gray-800">📌 Class Announcements</h3>
+                  <p className="text-sm text-gray-500">Posts from your teachers and administrators</p>
+                </div>
               </div>
-              {userPosts.length > 0 ? (
+              {visiblePosts.length > 0 ? (
                 <div className="space-y-4">
-                  {userPosts.map(post => (
+                  {visiblePosts.map(post => (
                     <div key={post.id} className="bg-white p-6 rounded-lg shadow border">
                       {isLoadingProfiles ? (
                         <div className="mb-3">
@@ -604,43 +605,6 @@ export default function StudentDashboard() {
                               <p className="text-xs text-gray-500">{post.timestamp ? new Date(post.timestamp).toLocaleDateString() : 'Recently'}</p>
                             </div>
                           </button>
-                          {/* Edit/Delete Menu for Post Owner */}
-                          {(post.poster?.id === userId || post.poster?.email === userId) && (
-                            <div className="relative">
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setPostActionMenu(postActionMenu === post.id ? null : post.id);
-                                }}
-                                className="text-gray-500 hover:text-gray-700 text-2xl font-bold px-2"
-                              >
-                                ⋮
-                              </button>
-                              {postActionMenu === post.id && (
-                                <div className="absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[120px]">
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      openPostModal(post);
-                                      setPostActionMenu(null);
-                                    }}
-                                    className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
-                                  >
-                                    ✏️ Edit
-                                  </button>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDeletePost(post.id, post.title);
-                                    }}
-                                    className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 text-sm"
-                                  >
-                                    🗑️ Delete
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          )}
                         </div>
                       )}
                       <div className="flex items-start justify-between mb-2">
@@ -673,8 +637,9 @@ export default function StudentDashboard() {
                   ))}
                 </div>
               ) : (
-                <div className="bg-white p-6 rounded-lg shadow border text-gray-600 text-center">
-                  <p>No posts yet. Create a post to share with everyone!</p>
+                <div className="bg-white p-8 rounded-lg shadow border text-center">
+                  <div className="text-6xl mb-4">📚</div>
+                  <p className="text-gray-500">No announcements yet. Your teachers will post updates here.</p>
                 </div>
               )}
             </div>

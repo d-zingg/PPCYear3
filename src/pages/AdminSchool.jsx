@@ -439,7 +439,10 @@ export default function AdminSchool() {
             </button>
             {menuOpen && (
               <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50">
-                <button className="block w-full text-left px-4 py-3 hover:bg-gray-50 transition border-b">
+                <button 
+                  onClick={() => { setMenuOpen(false); navigate('/settings'); }}
+                  className="block w-full text-left px-4 py-3 hover:bg-gray-50 transition border-b"
+                >
                   ⚙️ Settings
                 </button>
                 <button
