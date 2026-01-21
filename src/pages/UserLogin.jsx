@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { UserContext } from "../context/UserContext";
 import { UsersContext } from "../context/UsersContext";
 import NextButton, { advanceStep } from "../components/btn";
+import smpLogo from "../image/smp-logo.png";
 
 export default function UserLogin() {
   const navigate = useNavigate();
@@ -141,13 +142,11 @@ export default function UserLogin() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-cyan-50 to-purple-50 p-4">
       <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md transform transition-all hover:shadow-2xl">
         {/* Header */}
-        <div className="text-center mb-8">
-          <div className="inline-block p-4 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full mb-4 shadow-lg">
-            <span className="text-5xl">🎓</span>
+        <div className="text-center mb-8 ">
+          <div className=" p-4  rounded-3xl mb-4 shadow-lg flex flex-col items-center justify-center">
+            <img src={smpLogo} alt="SMP Logo" className="w-auto h-20 object-cover" />
+            <h2 className="text-4xl font-bold text-[#5b9bd5] mb-2">Welcome to SMP</h2>
           </div>
-          <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent mb-2">
-            Welcome to PPC
-          </h2>
           <p className="text-gray-600 text-lg">
             {existingMode ? "Sign in to your account" : "Create your account"}
           </p>

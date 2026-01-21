@@ -20,13 +20,28 @@ export default function StudentDashboard() {
   const [searchResults, setSearchResults] = useState([])
   const { user } = useContext(UserContext) || {}
   const { classes } = useContext(ClassesContext) || { classes: [] }
-  const { posts = [], toggleFavorite } = useContext(PostsContext) || {}
+  const { posts = [], toggleFavorite, addPost, deletePost, updatePost } = useContext(PostsContext) || {}
   const { assignments = [], submitAssignment, getStudentSubmission } = useContext(AssignmentsContext) || {}
   const [submissionModal, setSubmissionModal] = useState(null)
   const [submissionFormData, setSubmissionFormData] = useState({ answer: '', file: null, filePreview: '' })
   const [toast, setToast] = useState('')
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(true)
   const fileInputRef = React.useRef(null)
+  const [postModalOpen, setPostModalOpen] = useState(false)
+  const [postFormData, setPostFormData] = useState({
+    title: '',
+    description: '',
+    image: '',
+    imagePreview: '',
+    video: '',
+    videoPreview: '',
+    visibility: 'public',
+    targetClass: ''
+  })
+  const postImageInputRef = React.useRef(null)
+  const postVideoInputRef = React.useRef(null)
+  const [postActionMenu, setPostActionMenu] = useState(null)
+  const [editingPostId, setEditingPostId] = useState(null)
 
   // Loading effect for profiles
   useEffect(() => {
@@ -50,7 +65,16 @@ export default function StudentDashboard() {
     return enrolled || published;
   });
   const userId = user?.id || user?.email
-  const userPosts = posts.filter(p => p.poster?.id === userId || p.poster?.email === userId || p.poster === userId)
+  // Filter posts: show public posts + posts visible to student's class
+  const visiblePosts = posts.filter(post => {
+    if (!post.visibility || post.visibility === 'public') return true
+    if (post.visibility === 'students') return true
+    if (post.visibility === 'class' && post.targetClass) {
+      return assignedClasses.some(c => c.id === post.targetClass || c.className === post.targetClass)
+    }
+    return false
+  })
+  const userPosts = visiblePosts.filter(p => p.poster?.id === userId || p.poster?.email === userId || p.poster === userId)
 
   const renderContent = () => {
     switch (activeSection) {
@@ -255,17 +279,166 @@ export default function StudentDashboard() {
     }
   }
 
+  // Post creation handlers
+  const openPostModal = (postToEdit = null) => {
+    if (postToEdit) {
+      setEditingPostId(postToEdit.id)
+      setPostFormData({
+        title: postToEdit.title,
+        description: postToEdit.description,
+        image: postToEdit.image || '',
+        imagePreview: postToEdit.image || '',
+        video: postToEdit.video || '',
+        videoPreview: postToEdit.video || '',
+        visibility: postToEdit.visibility || 'public',
+        targetClass: postToEdit.targetClass || ''
+      })
+    } else {
+      setEditingPostId(null)
+      setPostFormData({
+        title: '',
+        description: '',
+        image: '',
+        imagePreview: '',
+        video: '',
+        videoPreview: '',
+        visibility: 'public',
+        targetClass: ''
+      })
+    }
+    setPostModalOpen(true)
+  }
+
+  const closePostModal = () => {
+    setPostModalOpen(false)
+    setEditingPostId(null)
+    setPostFormData({
+      title: '',
+      description: '',
+      image: '',
+      imagePreview: '',
+      video: '',
+      videoPreview: '',
+      visibility: 'public',
+      targetClass: ''
+    })
+    if (postImageInputRef.current) postImageInputRef.current.value = ''
+    if (postVideoInputRef.current) postVideoInputRef.current.value = ''
+  }
+
+  const handlePostImageSelect = (e) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('⚠️ Image size must be less than 5MB')
+        return
+      }
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setPostFormData(prev => ({
+          ...prev,
+          image: file.name,
+          imagePreview: e.target?.result,
+        }))
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const handlePostVideoSelect = (e) => {
+    const file = e.target.files?.[0]
+    if (file) {
+      if (file.size > 50 * 1024 * 1024) {
+        showToast('⚠️ Video size must be less than 50MB')
+        return
+      }
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        setPostFormData(prev => ({
+          ...prev,
+          video: file.name,
+          videoPreview: e.target?.result,
+        }))
+      }
+      reader.readAsDataURL(file)
+    }
+  }
+
+  const removePostImage = () => {
+    setPostFormData(prev => ({ ...prev, image: '', imagePreview: '' }))
+    if (postImageInputRef.current) postImageInputRef.current.value = ''
+  }
+
+  const removePostVideo = () => {
+    setPostFormData(prev => ({ ...prev, video: '', videoPreview: '' }))
+    if (postVideoInputRef.current) postVideoInputRef.current.value = ''
+  }
+
+  const handlePostSubmit = (e) => {
+    e.preventDefault()
+    if (!postFormData.title || !postFormData.description) {
+      showToast('⚠️ Please enter both title and description')
+      return
+    }
+
+    if (editingPostId) {
+      // Update existing post
+      if (updatePost) {
+        updatePost(editingPostId, {
+          title: postFormData.title,
+          description: postFormData.description,
+          image: postFormData.imagePreview || null,
+          video: postFormData.videoPreview || null,
+          visibility: postFormData.visibility,
+          targetClass: postFormData.targetClass,
+        })
+        showToast(`✅ Post "${postFormData.title}" updated successfully!`)
+      }
+    } else {
+      // Create new post
+      const postData = {
+        title: postFormData.title,
+        description: postFormData.description,
+        timestamp: new Date().toISOString(),
+        poster: {
+          id: user?.email || user?.id,
+          name: user?.name || 'Student',
+          avatar: user?.profileImage,
+        },
+        image: postFormData.imagePreview || null,
+        video: postFormData.videoPreview || null,
+        visibility: postFormData.visibility,
+        targetClass: postFormData.targetClass,
+        likes: 0,
+        favorites: 0,
+        comments: [],
+      }
+
+      if (addPost) addPost(postData)
+      showToast(`✅ Post "${postFormData.title}" created successfully!`)
+    }
+    closePostModal()
+  }
+
+  const handleDeletePost = (postId, title) => {
+    if (window.confirm(`Delete post "${title}"?`)) {
+      if (deletePost) deletePost(postId)
+      showToast(`🗑️ Post "${title}" deleted`)
+      setPostActionMenu(null)
+    }
+  }
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-purple-50 via-pink-50 to-rose-50">
       {/* Navbar */}
       <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-purple-600 to-pink-600 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
-            <span className="text-2xl">🎓</span>
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-xl transform hover:scale-105 transition-transform">
+            <img src={smpLogo} alt="SMP Logo" className="w-full h-full object-cover" />
           </div>
           <div>
-            <div className="text-2xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">PPC Student</div>
-            <div className="text-xs text-gray-500 font-medium">Learning Portal</div>
+            <div className="text-3xl font-bold text-[#5b9bd5]">SMP</div>
+            <div className="text-sm text-gray-500 font-medium">Learning Portal</div>
           </div>
         </div>
         <div className="relative w-64">
@@ -301,39 +474,41 @@ export default function StudentDashboard() {
             </div>
           )}
         </div>
-        <div className="flex items-center gap-4">
-          <Link
-            to="/userHome"
-            className="bg-indigo-400 hover:bg-indigo-500 text-white px-4 py-2 rounded transition font-semibold shadow-sm"
-            title="Go to Home Dashboard"
+        
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate("/userHome")}
+            className="px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-all hover:shadow-md flex items-center gap-2"
+            title="User View"
           >
-            🏠 Home
-          </Link>
+            <span>🏠</span>
+          </button>
           <button
             onClick={() => navigate('/profile')}
-            title="My Profile"
-            className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center"
+            className="w-11 h-11 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-purple-400 flex items-center justify-center text-sm font-bold bg-gradient-to-br from-purple-600 to-pink-600 text-white shadow-md hover:shadow-lg transition-all transform hover:scale-105"
+            title="Profile"
           >
             {user && user.profileImage ? (
               <img src={user.profileImage} alt="profile" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-sm">{(user && (user.name || user.email) ? (user.name || user.email)[0] : 'S')}</span>
+              <span>{(user && (user.name || user.email) ? (user.name || user.email)[0] : 'S')}</span>
             )}
           </button>
           <div className="relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="px-4 py-2 rounded hover:bg-purple-700 transition"
+              className="w-11 h-11 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all text-xl"
+              title="Menu"
             >
-              Menu ▼
+              ⋮
             </button>
             {menuOpen && (
-              <div className="absolute right-0 mt-2 w-40 bg-white text-gray-800 rounded shadow-lg z-10">
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100">
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50">
+                <button className="block w-full text-left px-4 py-3 hover:bg-gray-50 transition border-b">
                   ⚙️ Settings
                 </button>
                 <button
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-100 border-t"
+                  className="block w-full text-left px-4 py-3 hover:bg-red-50 text-red-600 transition"
                   onClick={() => { setMenuOpen(false); if (signOut) signOut(); navigate('/'); }}
                 >
                   🚪 Logout
@@ -394,7 +569,15 @@ export default function StudentDashboard() {
           {renderContent()}
           {activeSection === 'dashboard' ? (
             <div>
-              <h3 className="text-lg font-semibold mb-4">Your Posts</h3>
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="text-lg font-semibold">Your Posts</h3>
+                <button
+                  onClick={openPostModal}
+                  className="bg-gradient-to-r from-purple-600 to-pink-600 text-white px-4 py-2 rounded-lg hover:shadow-lg transition font-semibold"
+                >
+                  ✏️ Create Post
+                </button>
+              </div>
               {userPosts.length > 0 ? (
                 <div className="space-y-4">
                   {userPosts.map(post => (
@@ -404,7 +587,7 @@ export default function StudentDashboard() {
                           <UserProfileMini showTime={true} />
                         </div>
                       ) : (
-                        <div className="flex items-center gap-3 mb-3">
+                        <div className="flex items-center justify-between gap-3 mb-3">
                           <button
                             onClick={() => navigate(`/profile/${post.poster?.email || post.poster?.id}`)}
                             className="flex items-center gap-3 hover:opacity-80 cursor-pointer"
@@ -421,9 +604,61 @@ export default function StudentDashboard() {
                               <p className="text-xs text-gray-500">{post.timestamp ? new Date(post.timestamp).toLocaleDateString() : 'Recently'}</p>
                             </div>
                           </button>
+                          {/* Edit/Delete Menu for Post Owner */}
+                          {(post.poster?.id === userId || post.poster?.email === userId) && (
+                            <div className="relative">
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setPostActionMenu(postActionMenu === post.id ? null : post.id);
+                                }}
+                                className="text-gray-500 hover:text-gray-700 text-2xl font-bold px-2"
+                              >
+                                ⋮
+                              </button>
+                              {postActionMenu === post.id && (
+                                <div className="absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[120px]">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      openPostModal(post);
+                                      setPostActionMenu(null);
+                                    }}
+                                    className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                                  >
+                                    ✏️ Edit
+                                  </button>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeletePost(post.id, post.title);
+                                    }}
+                                    className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 text-sm"
+                                  >
+                                    🗑️ Delete
+                                  </button>
+                                </div>
+                              )}
+                            </div>
+                          )}
                         </div>
                       )}
-                      <h4 className="font-bold text-gray-900 mb-2">{post.title}</h4>
+                      <div className="flex items-start justify-between mb-2">
+                        <h4 className="font-bold text-gray-900 flex-1">{post.title}</h4>
+                        <div className="flex gap-2 ml-2">
+                          {post.visibility && post.visibility !== 'public' && (
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              post.visibility === 'students' ? 'bg-blue-100 text-blue-800' :
+                              post.visibility === 'class' ? 'bg-purple-100 text-purple-800' :
+                              'bg-gray-100 text-gray-800'
+                            }`}>
+                              {post.visibility === 'students' ? '👥 Students' :
+                               post.visibility === 'class' ? `📚 ${assignedClasses.find(c => c.id === post.targetClass)?.className || 'Class'}` :
+                               '🔒 Private'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
                       <p className="text-gray-700 mb-3">{post.description}</p>
                       {post.image && <img src={post.image} alt="post" className="w-full h-48 object-cover rounded mb-3" />}
                       {post.video && <video src={post.video} controls className="w-full h-48 rounded mb-3" />}
@@ -554,7 +789,157 @@ export default function StudentDashboard() {
         </div>
       )}
 
-            {/* Toast Notification */}
+{/* Post Creation Modal */}
+      {postModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b p-4 flex items-center justify-between">
+              <h3 className="text-xl font-bold">{editingPostId ? '✏️ Edit Post' : '✏️ Create New Post'}</h3>
+              <button onClick={closePostModal} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+
+            <form onSubmit={handlePostSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input
+                  type="text"
+                  value={postFormData.title}
+                  onChange={(e) => setPostFormData(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-md p-2"
+                  placeholder="Enter post title"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  value={postFormData.description}
+                  onChange={(e) => setPostFormData(prev => ({ ...prev, description: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-md p-2 h-32"
+                  placeholder="Write your post content..."
+                  required
+                />
+              </div>
+
+              {/* Image Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image (optional)</label>
+                <input
+                  ref={postImageInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePostImageSelect}
+                  className="hidden"
+                />
+                {postFormData.imagePreview ? (
+                  <div className="relative">
+                    <img src={postFormData.imagePreview} alt="preview" className="w-full h-48 object-cover rounded" />
+                    <button
+                      type="button"
+                      onClick={removePostImage}
+                      className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => postImageInputRef.current?.click()}
+                    className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50"
+                  >
+                    📷 Click to upload image
+                  </button>
+                )}
+              </div>
+
+              {/* Video Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Video (optional)</label>
+                <input
+                  ref={postVideoInputRef}
+                  type="file"
+                  accept="video/*"
+                  onChange={handlePostVideoSelect}
+                  className="hidden"
+                />
+                {postFormData.videoPreview ? (
+                  <div className="relative">
+                    <video src={postFormData.videoPreview} controls className="w-full h-48 rounded" />
+                    <button
+                      type="button"
+                      onClick={removePostVideo}
+                      className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => postVideoInputRef.current?.click()}
+                    className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50"
+                  >
+                    🎥 Click to upload video
+                  </button>
+                )}
+              </div>
+
+              {/* Visibility Options */}
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Who can see this?</label>
+                  <select
+                    value={postFormData.visibility}
+                    onChange={(e) => setPostFormData(prev => ({ ...prev, visibility: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-md p-2"
+                  >
+                    <option value="public">🌍 Public (Everyone)</option>
+                    <option value="students">👥 Students Only</option>
+                    <option value="class">📚 Specific Class</option>
+                  </select>
+                </div>
+
+                {postFormData.visibility === 'class' && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Select Class</label>
+                    <select
+                      value={postFormData.targetClass}
+                      onChange={(e) => setPostFormData(prev => ({ ...prev, targetClass: e.target.value }))}
+                      className="w-full border border-gray-300 rounded-md p-2"
+                      required
+                    >
+                      <option value="">Choose class...</option>
+                      {assignedClasses.map(cls => (
+                        <option key={cls.id} value={cls.id}>{cls.className}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={closePostModal}
+                  className="flex-1 bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-gradient-to-r from-purple-600 to-pink-600 text-white py-2 rounded-lg hover:shadow-lg transition"
+                >
+                  {editingPostId ? '✅ Update Post' : '✅ Create Post'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Toast Notification */}
             {toast && (
               <div className="fixed bottom-6 right-6 bg-gray-800 text-white px-6 py-4 rounded-lg shadow-2xl z-50 flex items-center gap-3">
                 <span className="font-medium">{toast}</span>

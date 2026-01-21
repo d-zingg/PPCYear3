@@ -32,6 +32,15 @@ export default function PublicProfile() {
     return () => clearTimeout(timer);
   }, [userId]);
 
+  // Find the user
+  const profileUser = allUsers.find(
+    (u) => u.id === userId || u.email === userId,
+  );
+  const userPosts =
+    profileUser && getPostsByUser
+      ? getPostsByUser(profileUser.email || profileUser.id)
+      : [];
+
   // Loading effects for posts and profiles
   useEffect(() => {
     setIsLoadingPosts(true);
@@ -47,15 +56,6 @@ export default function PublicProfile() {
       clearTimeout(profilesTimer);
     };
   }, [userPosts.length]);
-
-  // Find the user
-  const profileUser = allUsers.find(
-    (u) => u.id === userId || u.email === userId,
-  );
-  const userPosts =
-    profileUser && getPostsByUser
-      ? getPostsByUser(profileUser.email || profileUser.id)
-      : [];
 
   // Show loading skeleton
   if (isLoading) {
@@ -191,7 +191,14 @@ export default function PublicProfile() {
                       <UserProfileMini showTime={true} />
                     </div>
                   ) : (
-                    <div className="flex items-center gap-3 mb-4">
+                    <div 
+                      className="flex items-center gap-3 mb-4 cursor-pointer hover:bg-gray-100 -m-2 p-2 rounded transition"
+                      onClick={() => {
+                        if (post.poster?.email || post.poster?.id) {
+                          navigate(`/profile/${post.poster?.email || post.poster?.id}`);
+                        }
+                      }}
+                    >
                       <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
                         {post.poster?.avatar ? (
                           <img

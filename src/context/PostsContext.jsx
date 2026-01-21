@@ -76,6 +76,17 @@ export function PostsProvider({ children }) {
     setPosts((prev) => prev.filter((post) => post.id !== id));
   };
 
+  /* UPDATE POST */
+  const updatePost = (id, updatedData) => {
+    setPosts((prev) =>
+      prev.map((post) =>
+        post.id === id
+          ? { ...post, ...updatedData, updatedAt: new Date().toISOString() }
+          : post
+      )
+    );
+  };
+
   /* LIKE / UNLIKE POST */
   const toggleLike = (postId, userId) => {
     setPosts((prev) =>
@@ -162,6 +173,7 @@ export function PostsProvider({ children }) {
         posts,
         addPost,
         deletePost,
+        updatePost,
         toggleLike,
         toggleFavorite,
         addComment,

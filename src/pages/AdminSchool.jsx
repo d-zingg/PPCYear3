@@ -8,6 +8,7 @@ import ClassManagementEnhanced from "../features/admin/ClassManagementEnhanced";
 import UserManagement from "../features/admin/UserManagement";
 import SchoolManagement from "../features/admin/SchoolManagement";
 import { UserProfileMini } from "../components/LoadingSkeleton";
+import smpLogo from "../image/smp-logo.png";
 import {
   header,
   btnPrimary,
@@ -340,17 +341,17 @@ export default function AdminSchool() {
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
-            <span className="text-2xl">🛡️</span>
+        <div className="flex items-center gap-4">
+          <div className="w-auto h-16  transform hover:scale-105 transition-transform">
+            <img src={smpLogo} alt="SMP Logo" className="w-full h-full object-cover" />
           </div>
           <div>
-            <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">PPC Admin</div>
-            <div className="text-xs text-gray-500 font-medium">System Management</div>
+            <div className="text-3xl font-bold text-[#5b9bd5]">SMP</div>
+            <div className="text-sm text-gray-500 font-medium">System Management</div>
           </div>
         </div>
 
-        <div className="relative w-96 hidden md:block">
+        <div className="relative flex-1 max-w-md mx-8">
           <div className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -364,7 +365,7 @@ export default function AdminSchool() {
             className="w-full pl-10 pr-4 py-3 rounded-xl bg-gray-50 text-gray-800 border border-gray-200 focus:border-blue-500 focus:ring-4 focus:ring-blue-100 outline-none transition-all"
           />
           {searchResults.length > 0 && (
-            <div className="absolute top-full left-0 w-full bg-white text-gray-800 rounded-lg shadow-xl mt-2 z-50 max-h-96 overflow-y-auto">
+            <div className="absolute top-full left-0 w-full bg-white text-gray-800 rounded-xl shadow-xl mt-2 z-50 max-h-96 overflow-y-auto">
               {searchResults.map((result, idx) => (
                 <button
                   key={idx}
@@ -375,7 +376,7 @@ export default function AdminSchool() {
                       result.classId,
                     )
                   }
-                  className="w-full text-left px-4 py-3 hover:bg-blue-50 border-b transition"
+                  className="w-full text-left px-4 py-3 hover:bg-blue-50 border-b last:border-b-0 transition"
                 >
                   <div className="font-semibold text-sm">{result.name}</div>
                   {result.type === "post" && (
@@ -397,26 +398,23 @@ export default function AdminSchool() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate("/userHome")}
-            className="px-4 py-2.5 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-all hover:shadow-md"
+            className="px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-all hover:shadow-md flex items-center gap-2"
+            title="User View"
           >
-            🏠 User View
+            <span>🏠</span>
           </button>
           <button 
             onClick={() => openPostModal()} 
-            className="px-4 py-2.5 rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600 text-white font-medium transition-all hover:shadow-lg transform hover:scale-105"
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600 text-white font-medium transition-all hover:shadow-lg transform hover:scale-105 flex items-center gap-2"
+            title="Create Post"
           >
-            ➕ New Post
+            <span>➕</span>
+            <span className="hidden md:inline">Post</span>
           </button>
-          <button
-            onClick={() => setActiveSection("classes")}
-            className="px-4 py-2.5 rounded-lg bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white font-medium transition-all hover:shadow-lg transform hover:scale-105"
-          >
-            📚 Classes
-          </button>
-
           <button
             onClick={() => navigate("/profile")}
             className="w-11 h-11 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-blue-400 flex items-center justify-center text-sm font-bold bg-gradient-to-br from-blue-400 to-indigo-500 text-white shadow-md hover:shadow-lg transition-all transform hover:scale-105"
+            title="Profile"
           >
             {user && user.profileImage ? (
               <img
@@ -434,19 +432,18 @@ export default function AdminSchool() {
           <div className="relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="w-11 h-11 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all hover:shadow-md"
+              className="w-11 h-11 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all text-xl"
+              title="Menu"
             >
-              <svg className="w-5 h-5 text-gray-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-              </svg>
+              ⋮
             </button>
             {menuOpen && (
-              <div className="absolute right-0 mt-2 w-52 bg-white rounded-xl shadow-2xl z-50 border border-gray-100 overflow-hidden">
-                <button className="block w-full text-left px-5 py-3 hover:bg-gray-50 transition-colors font-medium text-gray-700">
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50">
+                <button className="block w-full text-left px-4 py-3 hover:bg-gray-50 transition border-b">
                   ⚙️ Settings
                 </button>
                 <button
-                  className="block w-full text-left px-5 py-3 hover:bg-red-50 text-red-600 border-t border-gray-100 transition-colors font-medium"
+                  className="block w-full text-left px-4 py-3 hover:bg-red-50 text-red-600 transition"
                   onClick={() => {
                     setMenuOpen(false);
                     if (signOut) signOut();
@@ -551,13 +548,23 @@ export default function AdminSchool() {
                             </span>
                           )}
                           <span
-                            className={`text-xs px-2 py-1 rounded-full ${post.visibility === "public" ? "bg-green-100 text-green-800" : post.visibility === "students" ? "bg-blue-100 text-blue-800" : "bg-gray-100 text-gray-800"}`}
+                            className={`text-xs px-2 py-1 rounded-full ${
+                              post.visibility === "public" 
+                                ? "bg-green-100 text-green-800" 
+                                : post.visibility === "students" 
+                                  ? "bg-purple-100 text-purple-800" 
+                                  : post.visibility === "class"
+                                    ? "bg-blue-100 text-blue-800"
+                                    : "bg-gray-100 text-gray-800"
+                            }`}
                           >
                             {post.visibility === "public"
                               ? "🌍 Public"
                               : post.visibility === "students"
-                                ? "👥 Students"
-                                : "🔒 Private"}
+                                ? "🎓 Students"
+                                : post.visibility === "class"
+                                  ? `👥 ${classes.find(c => c.id === post.classId)?.className || 'Class'}`
+                                  : "🔒 Private"}
                           </span>
 
                           <div className="relative">
@@ -814,7 +821,7 @@ export default function AdminSchool() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700">
-                    Visibility
+                    👁️ Visibility
                   </label>
                   <select
                     value={postFormData.visibility}
@@ -822,13 +829,14 @@ export default function AdminSchool() {
                       setPostFormData((prev) => ({
                         ...prev,
                         visibility: e.target.value,
+                        classId: e.target.value === 'class' ? prev.classId : ''
                       }))
                     }
                     className="mt-1 block w-full border border-gray-300 rounded-md p-2"
                   >
-                    <option value="public">Public</option>
-                    <option value="students">Students Only</option>
-                    <option value="private">Private</option>
+                    <option value="public">🌍 Public - Everyone</option>
+                    <option value="students">🎓 Students Only</option>
+                    <option value="class">👥 Specific Class</option>
                   </select>
                 </div>
                 <div className="flex items-end">
@@ -848,6 +856,25 @@ export default function AdminSchool() {
                   </label>
                 </div>
               </div>
+
+              {postFormData.visibility === 'class' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Select Class</label>
+                  <select
+                    value={postFormData.classId || ''}
+                    onChange={(e) => setPostFormData(prev => ({ ...prev, classId: e.target.value }))}
+                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                    required
+                  >
+                    <option value="">-- Choose a class --</option>
+                    {classes.map(cls => (
+                      <option key={cls.id} value={cls.id}>
+                        {cls.className} - {cls.section}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="flex gap-3 pt-4">
                 <button

@@ -2,19 +2,37 @@ import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PostsContext } from "../context/PostsContext";
 import { UserContext } from "../context/UserContext";
+import { ClassesContext } from "../context/ClassesContext";
 import { PostSkeleton, UserProfileMini } from "../components/LoadingSkeleton";
+import smpLogo from "../image/smp-logo.png";
 
 export default function UserHome() {
   const navigate = useNavigate();
 
   const { user, signOut } = useContext(UserContext) || {};
-  const { posts, toggleLike, toggleFavorite, addComment } =
+  const { posts, toggleLike, toggleFavorite, addComment, deletePost, updatePost } =
     useContext(PostsContext) || { posts: [] };
+  const { classes } = useContext(ClassesContext) || { classes: [] };
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [isLoadingPosts, setIsLoadingPosts] = useState(true);
   const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
+  const [postActionMenu, setPostActionMenu] = useState(null);
+  const [editModalOpen, setEditModalOpen] = useState(false);
+  const [editingPost, setEditingPost] = useState(null);
+  const [editFormData, setEditFormData] = useState({
+    title: '',
+    description: '',
+    image: '',
+    imagePreview: '',
+    video: '',
+    videoPreview: '',
+    visibility: 'public',
+    classId: ''
+  });
+  const editImageInputRef = React.useRef(null);
+  const editVideoInputRef = React.useRef(null);
 
   const currentUser = {
     id: user?.email || user?.id || "current-user",
@@ -74,17 +92,115 @@ export default function UserHome() {
     };
   }, [posts.length, searchQuery]);
 
+  const handleDeletePost = (postId, title) => {
+    if (window.confirm(`Delete post "${title}"?`)) {
+      if (deletePost) deletePost(postId);
+    }
+  };
+
+  const openEditModal = (post) => {
+    setEditingPost(post);
+    setEditFormData({
+      title: post.title,
+      description: post.description,
+      image: post.image || '',
+      imagePreview: post.image || '',
+      video: post.video || '',
+      videoPreview: post.video || '',
+      visibility: post.visibility || 'public',
+      classId: post.classId || ''
+    });
+    setEditModalOpen(true);
+    setPostActionMenu(null);
+  };
+
+  const closeEditModal = () => {
+    setEditModalOpen(false);
+    setEditingPost(null);
+    setEditFormData({ title: '', description: '', image: '', imagePreview: '', video: '', videoPreview: '', visibility: 'public', classId: '' });
+    if (editImageInputRef.current) editImageInputRef.current.value = '';
+    if (editVideoInputRef.current) editVideoInputRef.current.value = '';
+  };
+
+  const handleEditImageSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert('Image size must be less than 5MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setEditFormData(prev => ({
+          ...prev,
+          image: file.name,
+          imagePreview: e.target?.result,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleEditVideoSelect = (e) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 50 * 1024 * 1024) {
+        alert('Video size must be less than 50MB');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setEditFormData(prev => ({
+          ...prev,
+          video: file.name,
+          videoPreview: e.target?.result,
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeEditImage = () => {
+    setEditFormData(prev => ({ ...prev, image: '', imagePreview: '' }));
+    if (editImageInputRef.current) editImageInputRef.current.value = '';
+  };
+
+  const removeEditVideo = () => {
+    setEditFormData(prev => ({ ...prev, video: '', videoPreview: '' }));
+    if (editVideoInputRef.current) editVideoInputRef.current.value = '';
+  };
+
+  const handleEditSubmit = (e) => {
+    e.preventDefault();
+    if (!editFormData.title || !editFormData.description) {
+      alert('Please enter both title and description');
+      return;
+    }
+
+    if (updatePost && editingPost) {
+      updatePost(editingPost.id, {
+        title: editFormData.title,
+        description: editFormData.description,
+        image: editFormData.imagePreview || editFormData.image,
+        video: editFormData.videoPreview || editFormData.video,
+        visibility: editFormData.visibility,
+        classId: editFormData.classId
+      });
+    }
+    closeEditModal();
+  };
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
       {/* Navbar */}
       <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
-            <span className="text-2xl text-white font-bold">P</span>
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-xl transform hover:scale-105 transition-transform">
+            <img src={smpLogo} alt="SMP Logo" className="w-full h-full object-cover" />
           </div>
           <div>
-            <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">PPC</div>
-            <div className="text-xs text-gray-500 font-medium">Community Hub</div>
+            <div className="text-3xl font-bold text-[#5b9bd5]">SMP</div>
+            <div className="text-sm text-gray-500 font-medium">Community Hub</div>
           </div>
         </div>
 
@@ -197,7 +313,14 @@ export default function UserHome() {
                     <UserProfileMini showTime={true} />
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3 mb-4">
+                  <div 
+                    className="flex items-center gap-3 mb-4 cursor-pointer hover:bg-gray-50 -mx-2 px-2 py-2 rounded-lg transition"
+                    onClick={() => {
+                      if (post.poster?.email || post.poster?.id) {
+                        navigate(`/profile/${post.poster?.email || post.poster?.id}`);
+                      }
+                    }}
+                  >
                     <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center overflow-hidden shadow-md">
                       {post.poster?.avatar ? (
                         <img
@@ -210,16 +333,60 @@ export default function UserHome() {
                       )}
                     </div>
                     <div className="flex-1">
-                      <button
-                        onClick={() => navigate(`/profile/${post.poster?.email || post.poster?.id}`)}
-                        className="font-semibold text-gray-800 hover:text-blue-600 text-left cursor-pointer transition-colors"
-                      >
+                      <div className="font-semibold text-gray-800 hover:text-blue-600 transition-colors">
                         {post.poster?.name || "Anonymous"}
-                      </button>
-                      <div className="text-sm text-gray-500">
-                        {new Date(post.timestamp).toLocaleString()}
+                      </div>
+                      <div className="text-sm text-gray-500 flex items-center gap-2">
+                        <span>{new Date(post.timestamp).toLocaleString()}</span>
+                        {post.visibility === 'class' && post.classId && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                            👥 {classes.find(c => c.id === post.classId)?.className || 'Class Only'}
+                          </span>
+                        )}
+                        {(!post.visibility || post.visibility === 'public') && (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                            🌍 Public
+                          </span>
+                        )}
                       </div>
                     </div>
+                    {/* Edit/Delete Menu for Post Owner */}
+                    {(post.poster?.id === userId || post.poster?.email === userId) && (
+                      <div className="relative">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPostActionMenu(postActionMenu === post.id ? null : post.id);
+                          }}
+                          className="text-gray-500 hover:text-gray-700 text-2xl font-bold px-2"
+                        >
+                          ⋮
+                        </button>
+                        {postActionMenu === post.id && (
+                          <div className="absolute right-0 top-8 bg-white border border-gray-200 rounded-lg shadow-lg z-10 min-w-[120px]">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                openEditModal(post);
+                              }}
+                              className="w-full text-left px-4 py-2 hover:bg-gray-100 text-sm"
+                            >
+                              ✏️ Edit
+                            </button>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDeletePost(post.id, post.title);
+                                setPostActionMenu(null);
+                              }}
+                              className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600 text-sm"
+                            >
+                              🗑️ Delete
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -304,6 +471,156 @@ export default function UserHome() {
           </div>
         )}
       </div>
+
+      {/* Edit Post Modal */}
+      {editModalOpen && editingPost && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="sticky top-0 bg-white border-b p-4 flex items-center justify-between">
+              <h3 className="text-xl font-bold">✏️ Edit Post</h3>
+              <button onClick={closeEditModal} className="text-gray-500 hover:text-gray-700 text-2xl">&times;</button>
+            </div>
+
+            <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                <input
+                  type="text"
+                  value={editFormData.title}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, title: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-md p-2"
+                  placeholder="Enter post title"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                <textarea
+                  value={editFormData.description}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, description: e.target.value }))}
+                  className="w-full border border-gray-300 rounded-md p-2 h-32"
+                  placeholder="Write your post content..."
+                  required
+                />
+              </div>
+
+              {/* Image Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Image (optional)</label>
+                <input
+                  ref={editImageInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleEditImageSelect}
+                  className="hidden"
+                />
+                {editFormData.imagePreview ? (
+                  <div className="relative">
+                    <img src={editFormData.imagePreview} alt="preview" className="w-full h-48 object-cover rounded" />
+                    <button
+                      type="button"
+                      onClick={removeEditImage}
+                      className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => editImageInputRef.current?.click()}
+                    className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50"
+                  >
+                    📷 Click to upload image
+                  </button>
+                )}
+              </div>
+
+              {/* Video Upload */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Video (optional)</label>
+                <input
+                  ref={editVideoInputRef}
+                  type="file"
+                  accept="video/*"
+                  onChange={handleEditVideoSelect}
+                  className="hidden"
+                />
+                {editFormData.videoPreview ? (
+                  <div className="relative">
+                    <video src={editFormData.videoPreview} controls className="w-full h-48 rounded" />
+                    <button
+                      type="button"
+                      onClick={removeEditVideo}
+                      className="absolute top-2 right-2 bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600"
+                    >
+                      Remove
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => editVideoInputRef.current?.click()}
+                    className="w-full border-2 border-dashed border-gray-300 rounded-lg p-4 text-center hover:bg-gray-50"
+                  >
+                    🎥 Click to upload video
+                  </button>
+                )}
+              </div>
+
+              {/* Visibility */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">👁️ Who can see this post?</label>
+                <select
+                  value={editFormData.visibility}
+                  onChange={(e) => setEditFormData(prev => ({ ...prev, visibility: e.target.value, classId: e.target.value === 'class' ? prev.classId : '' }))}
+                  className="w-full border border-gray-300 rounded-md p-2 bg-white"
+                >
+                  <option value="public">🌍 Public - Everyone can see</option>
+                  <option value="class">👥 Specific Class Only</option>
+                </select>
+              </div>
+
+              {/* Class Selection */}
+              {editFormData.visibility === 'class' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Select Class</label>
+                  <select
+                    value={editFormData.classId}
+                    onChange={(e) => setEditFormData(prev => ({ ...prev, classId: e.target.value }))}
+                    className="w-full border border-gray-300 rounded-md p-2 bg-white"
+                    required
+                  >
+                    <option value="">-- Choose a class --</option>
+                    {classes.map(cls => (
+                      <option key={cls.id} value={cls.id}>
+                        {cls.className} ({cls.section})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              <div className="flex gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={closeEditModal}
+                  className="flex-1 bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 bg-blue-500 text-white py-2 rounded-lg hover:bg-blue-600 transition"
+                >
+                  ✅ Update Post
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

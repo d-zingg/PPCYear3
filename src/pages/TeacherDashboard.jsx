@@ -529,13 +529,13 @@ export default function TeacherDashboard() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
       {/* Navbar */}
       <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-50">
-        <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-emerald-600 to-teal-700 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
-            <span className="text-2xl">🎓</span>
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-2xl overflow-hidden shadow-xl transform hover:scale-105 transition-transform">
+            <img src={smpLogo} alt="SMP Logo" className="w-full h-full object-cover" />
           </div>
           <div>
-            <div className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">PPC Teacher</div>
-            <div className="text-xs text-gray-500 font-medium">Teaching Portal</div>
+            <div className="text-3xl font-bold text-[#5b9bd5]">SMP</div>
+            <div className="text-sm text-gray-500 font-medium">Teaching Portal</div>
           </div>
         </div>
         <div className="relative w-64">
@@ -572,41 +572,49 @@ export default function TeacherDashboard() {
             </div>
           )}
         </div>
-        {/* Profile and Menu - Create Post in navbar */}
-        <div className="flex items-center gap-4">
-          <button onClick={() => openPostModal()} className={btnAccent} title="Create a new post">➕ Create Post</button>
-          <Link
-            to="/userHome"
-            className="bg-indigo-400 hover:bg-indigo-500 text-white px-4 py-2 rounded transition font-semibold shadow-sm"
-            title="Go to Home Dashboard"
+        
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigate("/userHome")}
+            className="px-4 py-2.5 rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium transition-all hover:shadow-md flex items-center gap-2"
+            title="User View"
           >
-            🏠 Home
-          </Link>
+            <span>🏠</span>
+          </button>
+          <button 
+            onClick={() => openPostModal()} 
+            className="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-medium transition-all hover:shadow-lg transform hover:scale-105 flex items-center gap-2"
+            title="Create Post"
+          >
+            <span>➕</span>
+            <span className="hidden md:inline">Post</span>
+          </button>
           <button
             onClick={() => navigate('/profile')}
-            title="My Profile"
-            className="w-10 h-10 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center"
+            className="w-11 h-11 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-emerald-400 flex items-center justify-center text-sm font-bold bg-gradient-to-br from-emerald-600 to-teal-600 text-white shadow-md hover:shadow-lg transition-all transform hover:scale-105"
+            title="Profile"
           >
             {user && user.profileImage ? (
               <img src={user.profileImage} alt="profile" className="w-full h-full object-cover" />
             ) : (
-              <span className="text-sm">{(user && (user.name || user.email) ? (user.name || user.email)[0] : 'T')}</span>
+              <span>{(user && (user.name || user.email) ? (user.name || user.email)[0] : 'T')}</span>
             )}
           </button>
           <div className="relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="px-4 py-2 rounded hover:bg-emerald-500 transition"
+              className="w-11 h-11 rounded-xl bg-gray-100 hover:bg-gray-200 flex items-center justify-center transition-all text-xl"
+              title="Menu"
             >
-              Menu ▼
+              ⋮
             </button>
             {menuOpen && (
-              <div className="absolute right-0 mt-2 w-40 bg-white text-gray-800 rounded shadow-lg z-10">
-                <button className="block w-full text-left px-4 py-2 hover:bg-gray-100">
+              <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl border border-gray-200 overflow-hidden z-50">
+                <button className="block w-full text-left px-4 py-3 hover:bg-gray-50 transition border-b">
                   ⚙️ Settings
                 </button>
                 <button
-                  className="block w-full text-left px-4 py-2 hover:bg-gray-100 border-t"
+                  className="block w-full text-left px-4 py-3 hover:bg-red-50 text-red-600 transition"
                   onClick={() => { setMenuOpen(false); if (signOut) signOut(); navigate('/'); }}
                 >
                   🚪 Logout
@@ -705,9 +713,26 @@ export default function TeacherDashboard() {
                             )}
                             <div>
                               <p className="font-semibold text-blue-600 hover:text-blue-800">{post.poster?.name || 'Teacher'}</p>
-                              <p className="text-xs text-gray-500">
-                                {post.timestamp ? new Date(post.timestamp).toLocaleDateString() : 'Recently'}
-                              </p>
+                              <div className="flex items-center gap-2">
+                                <p className="text-xs text-gray-500">
+                                  {post.timestamp ? new Date(post.timestamp).toLocaleDateString() : 'Recently'}
+                                </p>
+                                {post.visibility === 'class' && post.classId && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-xs font-medium">
+                                    👥 {teacherClasses.find(c => c.id === post.classId)?.name || 'Class Only'}
+                                  </span>
+                                )}
+                                {post.visibility === 'students' && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 text-xs font-medium">
+                                    🎓 Students
+                                  </span>
+                                )}
+                                {(!post.visibility || post.visibility === 'public') && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-xs font-medium">
+                                    🌍 Public
+                                  </span>
+                                )}
+                              </div>
                             </div>
                           </button>
                         )}
@@ -900,15 +925,15 @@ export default function TeacherDashboard() {
 
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700">Visibility</label>
+                  <label className="block text-sm font-medium text-gray-700">👁️ Visibility</label>
                   <select 
                     value={postFormData.visibility}
-                    onChange={(e) => setPostFormData(prev => ({ ...prev, visibility: e.target.value }))}
+                    onChange={(e) => setPostFormData(prev => ({ ...prev, visibility: e.target.value, classId: e.target.value === 'class' ? prev.classId : '' }))}
                     className="mt-1 block w-full border border-gray-300 rounded-md p-2"
                   >
-                    <option value="public">Public</option>
-                    <option value="students">Students Only</option>
-                    <option value="private">Private</option>
+                    <option value="public">🌍 Public - Everyone</option>
+                    <option value="students">🎓 Students Only</option>
+                    <option value="class">👥 Specific Class</option>
                   </select>
                 </div>
 
@@ -924,6 +949,25 @@ export default function TeacherDashboard() {
                   </label>
                 </div>
               </div>
+
+              {postFormData.visibility === 'class' && (
+                <div>
+                  <label className="block text-sm font-medium text-gray-700">Select Class</label>
+                  <select
+                    value={postFormData.classId || ''}
+                    onChange={(e) => setPostFormData(prev => ({ ...prev, classId: e.target.value }))}
+                    className="mt-1 block w-full border border-gray-300 rounded-md p-2"
+                    required
+                  >
+                    <option value="">-- Choose a class --</option>
+                    {teacherClasses.map(cls => (
+                      <option key={cls.id} value={cls.id}>
+                        {cls.name} - {cls.courseCode}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
 
               <div className="flex gap-3 pt-4">
                 <button type="button" onClick={closePostModal} className="flex-1 bg-gray-500 text-white py-2 rounded hover:bg-gray-600">
