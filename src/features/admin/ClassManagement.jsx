@@ -384,7 +384,7 @@ export default function ClassManagement() {
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700"
+                  className="flex-1 bg-blue-400 text-white py-2 rounded hover:bg-blue-500 shadow-sm transition"
                 >
                   {editingClass ? "Save Changes" : "Create Class"}
                 </button>

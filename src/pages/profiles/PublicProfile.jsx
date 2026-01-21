@@ -2,6 +2,7 @@ import React, { useContext, useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { UsersContext } from "../../context/UsersContext";
 import { PostsContext } from "../../context/PostsContext";
+import { ProfileSkeleton, PostSkeleton, UserProfileMini } from "../../components/LoadingSkeleton";
 
 export default function PublicProfile() {
   const { userId } = useParams();
@@ -10,6 +11,9 @@ export default function PublicProfile() {
   const { getPostsByUser, toggleLike, toggleFavorite, addComment } =
     useContext(PostsContext) || {};
   const [viewerUserId, setViewerUserId] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingPosts, setIsLoadingPosts] = useState(true);
+  const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
 
   // Get viewer's ID from context or localStorage
   useEffect(() => {
@@ -19,6 +23,31 @@ export default function PublicProfile() {
     setViewerUserId(storedUserId);
   }, []);
 
+  // Loading effect for profile
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [userId]);
+
+  // Loading effects for posts and profiles
+  useEffect(() => {
+    setIsLoadingPosts(true);
+    setIsLoadingProfiles(true);
+    const postsTimer = setTimeout(() => {
+      setIsLoadingPosts(false);
+    }, 800);
+    const profilesTimer = setTimeout(() => {
+      setIsLoadingProfiles(false);
+    }, 600);
+    return () => {
+      clearTimeout(postsTimer);
+      clearTimeout(profilesTimer);
+    };
+  }, [userPosts.length]);
+
   // Find the user
   const profileUser = allUsers.find(
     (u) => u.id === userId || u.email === userId,
@@ -27,6 +56,11 @@ export default function PublicProfile() {
     profileUser && getPostsByUser
       ? getPostsByUser(profileUser.email || profileUser.id)
       : [];
+
+  // Show loading skeleton
+  if (isLoading) {
+    return <ProfileSkeleton />;
+  }
 
   if (!profileUser) {
     return (
@@ -38,7 +72,7 @@ export default function PublicProfile() {
           </p>
           <button
             onClick={() => navigate(-1)}
-            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+            className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-500 shadow-sm transition"
           >
             Go Back
           </button>
@@ -152,27 +186,33 @@ export default function PublicProfile() {
                   className="bg-gray-50 border border-gray-200 rounded-lg p-6"
                 >
                   {/* Post Header */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                      {post.poster?.avatar ? (
-                        <img
-                          src={post.poster.avatar}
-                          alt="avatar"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span>{(post.poster?.name || "A")[0]}</span>
-                      )}
+                  {isLoadingProfiles ? (
+                    <div className="mb-4">
+                      <UserProfileMini showTime={true} />
                     </div>
-                    <div>
-                      <div className="font-semibold">
-                        {post.poster?.name || "Anonymous"}
+                  ) : (
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                        {post.poster?.avatar ? (
+                          <img
+                            src={post.poster.avatar}
+                            alt="avatar"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span>{(post.poster?.name || "A")[0]}</span>
+                        )}
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {new Date(post.timestamp).toLocaleString()}
+                      <div>
+                        <div className="font-semibold">
+                          {post.poster?.name || "Anonymous"}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(post.timestamp).toLocaleString()}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Post Content */}
                   <h3 className="text-lg font-bold mb-2">{post.title}</h3>

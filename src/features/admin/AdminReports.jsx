@@ -134,7 +134,7 @@ export default function AdminReports() {
               onClick={() => setTimePeriod(period.value)}
               className={`px-4 py-2 rounded-lg font-medium transition-all ${
                 timePeriod === period.value
-                  ? "bg-blue-600 text-white"
+                  ? "bg-blue-400 text-white shadow-sm"
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >

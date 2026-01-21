@@ -53,7 +53,7 @@ export default function UserManagement() {
       <div className="mb-6">
         <button
           onClick={() => setEditingUser({})}
-          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-500 shadow-sm transition"
         >
           Add New User
         </button>
@@ -118,7 +118,7 @@ export default function UserManagement() {
           <div className="mt-4 flex gap-2">
             <button
               onClick={handleSave}
-              className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+              className="bg-emerald-400 text-white px-4 py-2 rounded hover:bg-emerald-500 shadow-sm transition"
             >
               Save
             </button>

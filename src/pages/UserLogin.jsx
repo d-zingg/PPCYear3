@@ -138,14 +138,14 @@ export default function UserLogin() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
-      <div className="bg-white p-8 rounded-3xl shadow-2xl w-full max-w-md transform transition-all hover:shadow-3xl">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-cyan-50 to-purple-50 p-4">
+      <div className="bg-white p-8 rounded-3xl shadow-xl w-full max-w-md transform transition-all hover:shadow-2xl">
         {/* Header */}
         <div className="text-center mb-8">
-          <div className="inline-block p-4 bg-gradient-to-r from-blue-500 to-indigo-600 rounded-full mb-4 shadow-lg">
+          <div className="inline-block p-4 bg-gradient-to-r from-blue-400 to-indigo-500 rounded-full mb-4 shadow-lg">
             <span className="text-5xl">🎓</span>
           </div>
-          <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
+          <h2 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent mb-2">
             Welcome to PPC
           </h2>
           <p className="text-gray-600 text-lg">
@@ -157,7 +157,7 @@ export default function UserLogin() {
         <div className="mb-6 text-center">
           <button
             type="button"
-            className="text-blue-600 hover:text-blue-700 font-medium transition-colors duration-200 flex items-center justify-center mx-auto gap-2"
+            className="text-blue-500 hover:text-blue-600 font-medium transition-colors duration-200 flex items-center justify-center mx-auto gap-2"
             onClick={() => {
               setExistingMode(!existingMode);
               setStep(0);
@@ -196,8 +196,8 @@ export default function UserLogin() {
               <input
                 className={`w-full px-4 py-3 border-2 rounded-xl transition-all outline-none ${
                   existingEmail && !isValidEmail(existingEmail)
-                    ? "border-red-400 focus:border-red-500 focus:ring-2 focus:ring-red-200"
-                    : "border-gray-200 focus:border-blue-500 focus:ring-2 focus:ring-blue-200"
+                    ? "border-red-300 focus:border-red-400 focus:ring-2 focus:ring-red-100"
+                    : "border-gray-200 focus:border-blue-400 focus:ring-2 focus:ring-blue-100"
                 }`}
                 placeholder="your.email@example.com"
                 type="email"
@@ -237,7 +237,7 @@ export default function UserLogin() {
               disabled={!canExistingSignIn}
               className={`w-full py-4 rounded-xl font-bold text-lg transition-all transform ${
                 canExistingSignIn
-                  ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-700 hover:to-indigo-700 hover:scale-[1.02] shadow-lg hover:shadow-xl"
+                  ? "bg-gradient-to-r from-blue-400 to-indigo-500 text-white hover:from-blue-500 hover:to-indigo-600 hover:scale-[1.02] shadow-lg hover:shadow-xl"
                   : "bg-gray-200 text-gray-400 cursor-not-allowed"
               }`}
             >

@@ -54,3 +54,5 @@ Thumbs.db
 # Local storage data
 *.local
 
+.vercel
+.env*.local

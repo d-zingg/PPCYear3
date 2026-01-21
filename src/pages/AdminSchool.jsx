@@ -7,6 +7,7 @@ import AdminReports from "../features/admin/AdminReports";
 import ClassManagementEnhanced from "../features/admin/ClassManagementEnhanced";
 import UserManagement from "../features/admin/UserManagement";
 import SchoolManagement from "../features/admin/SchoolManagement";
+import { UserProfileMini } from "../components/LoadingSkeleton";
 import {
   header,
   btnPrimary,
@@ -15,16 +16,6 @@ import {
   smallLink,
   card,
 } from "../components/ui/styles";
-
-const mockStudentsPerClass = {
-  class_abc123: [
-    { id: 1, name: "Alice Johnson", email: "alice@student.com" },
-    { id: 2, name: "Bob Smith", email: "bob@student.com" },
-  ],
-  class_xyz789: [
-    { id: 3, name: "Charlie Davis", email: "charlie@student.com" },
-  ],
-};
 
 export default function AdminSchool() {
   const {
@@ -52,6 +43,7 @@ export default function AdminSchool() {
   const [searchResults, setSearchResults] = useState([]);
   const [toast, setToast] = useState("");
   const [selectedClassId, setSelectedClassId] = useState(null);
+  const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
 
   // Posts state
   const [editingPostId, setEditingPostId] = useState(null);
@@ -79,6 +71,15 @@ export default function AdminSchool() {
       setAdminPosts(posts.map((p) => ({ ...p })));
     }
   }, [posts]);
+
+  // Loading effect for profiles
+  useEffect(() => {
+    setIsLoadingProfiles(true);
+    const timer = setTimeout(() => {
+      setIsLoadingProfiles(false);
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [adminPosts.length]);
 
   // Small toast helper
   const showToast = (message) => {
@@ -327,7 +328,7 @@ export default function AdminSchool() {
         return <SchoolManagement />;
       case "classes":
         // Renders Class Management Component
-        return <ClassManagement />; // <-- This is the correct call
+        return <ClassManagementEnhanced />; // <-- Fixed to use the correct import
 
       case "reports":
         return <AdminReports />;
@@ -340,11 +341,11 @@ export default function AdminSchool() {
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
       <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-indigo-500 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
             <span className="text-2xl">🛡️</span>
           </div>
           <div>
-            <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">PPC Admin</div>
+            <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-indigo-500 bg-clip-text text-transparent">PPC Admin</div>
             <div className="text-xs text-gray-500 font-medium">System Management</div>
           </div>
         </div>
@@ -402,7 +403,7 @@ export default function AdminSchool() {
           </button>
           <button 
             onClick={() => openPostModal()} 
-            className="px-4 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium transition-all hover:shadow-lg transform hover:scale-105"
+            className="px-4 py-2.5 rounded-lg bg-gradient-to-r from-blue-400 to-indigo-500 hover:from-blue-500 hover:to-indigo-600 text-white font-medium transition-all hover:shadow-lg transform hover:scale-105"
           >
             ➕ New Post
           </button>
@@ -415,7 +416,7 @@ export default function AdminSchool() {
 
           <button
             onClick={() => navigate("/profile")}
-            className="w-11 h-11 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-blue-500 flex items-center justify-center text-sm font-bold bg-gradient-to-br from-blue-600 to-indigo-600 text-white shadow-md hover:shadow-lg transition-all transform hover:scale-105"
+            className="w-11 h-11 rounded-xl overflow-hidden border-2 border-gray-200 hover:border-blue-400 flex items-center justify-center text-sm font-bold bg-gradient-to-br from-blue-400 to-indigo-500 text-white shadow-md hover:shadow-lg transition-all transform hover:scale-105"
           >
             {user && user.profileImage ? (
               <img
@@ -513,29 +514,35 @@ export default function AdminSchool() {
                       className={`bg-white p-6 rounded-lg shadow border ${post.isPinned ? "border-yellow-400 bg-yellow-50" : "border-gray-200"}`}
                     >
                       <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          {post.poster?.avatar ? (
-                            <img
-                              src={post.poster.avatar}
-                              alt={post.poster.name}
-                              className="w-10 h-10 rounded-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-sm font-bold">
-                              {post.poster?.name?.[0] || "A"}
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-semibold text-gray-800">
-                              {post.poster?.name || "Admin"}
-                            </p>
-                            <p className="text-xs text-gray-500">
-                              {post.timestamp
-                                ? new Date(post.timestamp).toLocaleDateString()
-                                : "Recently"}
-                            </p>
+                        {isLoadingProfiles ? (
+                          <div className="flex-1">
+                            <UserProfileMini showTime={true} />
                           </div>
-                        </div>
+                        ) : (
+                          <div className="flex items-center gap-3">
+                            {post.poster?.avatar ? (
+                              <img
+                                src={post.poster.avatar}
+                                alt={post.poster.name}
+                                className="w-10 h-10 rounded-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-blue-200 flex items-center justify-center text-sm font-bold">
+                                {post.poster?.name?.[0] || "A"}
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-semibold text-gray-800">
+                                {post.poster?.name || "Admin"}
+                              </p>
+                              <p className="text-xs text-gray-500">
+                                {post.timestamp
+                                  ? new Date(post.timestamp).toLocaleDateString()
+                                  : "Recently"}
+                              </p>
+                            </div>
+                          </div>
+                        )}
 
                         <div className="flex items-center gap-2">
                           {post.isPinned && (

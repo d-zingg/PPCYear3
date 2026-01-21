@@ -7,6 +7,7 @@ import { AssignmentsContext } from '../context/AssignmentsContext';
 import { ClassesContext } from '../context/ClassesContext';
 import ClassManagementEnhanced from '../features/admin/ClassManagementEnhanced';
 import { btnAccent } from '../components/ui/styles';
+import { PostSkeleton, UserProfileMini } from '../components/LoadingSkeleton';
 
 export default function TeacherDashboard() {
   // --- State and Context Initialization ---
@@ -31,6 +32,8 @@ export default function TeacherDashboard() {
   const [editingPostId, setEditingPostId] = useState(null);
   const [teacherPosts, setTeacherPosts] = useState([]);
   const [postActionMenu, setPostActionMenu] = useState(null);
+  const [isLoadingPosts, setIsLoadingPosts] = useState(true);
+  const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
   const [postFormData, setPostFormData] = useState({
     title: '',
     description: '',
@@ -184,6 +187,22 @@ export default function TeacherDashboard() {
     if (videoInputRef.current) videoInputRef.current.value = '';
   };
 
+  // Loading effect for posts
+  useEffect(() => {
+    setIsLoadingPosts(true);
+    setIsLoadingProfiles(true);
+    const postsTimer = setTimeout(() => {
+      setIsLoadingPosts(false);
+    }, 800);
+    const profilesTimer = setTimeout(() => {
+      setIsLoadingProfiles(false);
+    }, 600);
+    return () => {
+      clearTimeout(postsTimer);
+      clearTimeout(profilesTimer);
+    };
+  }, [teacherPosts.length]);
+
   const handlePostSubmit = (e) => {
     e.preventDefault();
     if (!postFormData.title || !postFormData.description) {
@@ -276,7 +295,7 @@ export default function TeacherDashboard() {
           <h2 className="text-2xl font-bold">📋 Assignment Management</h2>
           <button
             onClick={() => { setActiveSection('postAssignment'); setEditingAssignment(null); }}
-            className="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 transition font-semibold"
+            className="bg-emerald-400 text-white px-4 py-2 rounded-lg hover:bg-emerald-500 transition font-semibold shadow-sm"
           >
             ➕ Create New Assignment
           </button>
@@ -308,7 +327,7 @@ export default function TeacherDashboard() {
                   <div className="flex gap-2 ml-4">
                     <button
                       onClick={() => { setEditingAssignment(assignment); setActiveSection('postAssignment'); }}
-                      className="bg-blue-500 text-white px-3 py-2 rounded hover:bg-blue-600 transition text-sm"
+                      className="bg-blue-400 text-white px-3 py-2 rounded hover:bg-blue-500 transition text-sm shadow-sm"
                       title="Edit assignment"
                     >
                       ✏️ Edit
@@ -411,7 +430,7 @@ export default function TeacherDashboard() {
             </button>
             <button
               type="submit"
-              className="bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition"
+              className="bg-emerald-400 text-white py-2 px-4 rounded-md hover:bg-emerald-500 transition shadow-sm"
             >
               {isEditing ? 'Save Changes' : 'Post Assignment'}
             </button>
@@ -558,7 +577,7 @@ export default function TeacherDashboard() {
           <button onClick={() => openPostModal()} className={btnAccent} title="Create a new post">➕ Create Post</button>
           <Link
             to="/userHome"
-            className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded transition font-semibold"
+            className="bg-indigo-400 hover:bg-indigo-500 text-white px-4 py-2 rounded transition font-semibold shadow-sm"
             title="Go to Home Dashboard"
           >
             🏠 Home
@@ -577,7 +596,7 @@ export default function TeacherDashboard() {
           <div className="relative">
             <button
               onClick={() => setMenuOpen(!menuOpen)}
-              className="px-4 py-2 rounded hover:bg-green-700 transition"
+              className="px-4 py-2 rounded hover:bg-emerald-500 transition"
             >
               Menu ▼
             </button>
@@ -657,29 +676,41 @@ export default function TeacherDashboard() {
               </div>
 
               <div className="space-y-4">
-                {sortedTeacherPosts.length > 0 ? (
+                {isLoadingPosts ? (
+                  <>
+                    <PostSkeleton />
+                    <PostSkeleton />
+                    <PostSkeleton />
+                  </>
+                ) : sortedTeacherPosts.length > 0 ? (
                   sortedTeacherPosts.map(post => (
                     <div key={post.id} className={`bg-white p-6 rounded-lg shadow border transition ${post.isPinned ? 'border-yellow-400 bg-yellow-50' : 'border-gray-200'}`}>
                       {/* Header */}
                       <div className="flex items-start justify-between mb-4">
-                        <button
-                          onClick={() => navigate(`/profile/${post.poster?.email || post.poster?.id}`)}
-                          className="flex items-center gap-3 hover:opacity-80 cursor-pointer text-left"
-                        >
-                          {post.poster?.avatar ? (
-                            <img src={post.poster.avatar} alt={post.poster.name} className="w-10 h-10 rounded-full object-cover" />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center text-sm font-bold">
-                              {post.poster?.name?.[0] || 'T'}
-                            </div>
-                          )}
-                          <div>
-                            <p className="font-semibold text-blue-600 hover:text-blue-800">{post.poster?.name || 'Teacher'}</p>
-                            <p className="text-xs text-gray-500">
-                              {post.timestamp ? new Date(post.timestamp).toLocaleDateString() : 'Recently'}
-                            </p>
+                        {isLoadingProfiles ? (
+                          <div className="flex-1">
+                            <UserProfileMini showTime={true} />
                           </div>
-                        </button>
+                        ) : (
+                          <button
+                            onClick={() => navigate(`/profile/${post.poster?.email || post.poster?.id}`)}
+                            className="flex items-center gap-3 hover:opacity-80 cursor-pointer text-left"
+                          >
+                            {post.poster?.avatar ? (
+                              <img src={post.poster.avatar} alt={post.poster.name} className="w-10 h-10 rounded-full object-cover" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-green-200 flex items-center justify-center text-sm font-bold">
+                                {post.poster?.name?.[0] || 'T'}
+                              </div>
+                            )}
+                            <div>
+                              <p className="font-semibold text-blue-600 hover:text-blue-800">{post.poster?.name || 'Teacher'}</p>
+                              <p className="text-xs text-gray-500">
+                                {post.timestamp ? new Date(post.timestamp).toLocaleDateString() : 'Recently'}
+                              </p>
+                            </div>
+                          </button>
+                        )}
 
                         {/* Status & Menu */}
                         <div className="flex items-center gap-2">
@@ -708,7 +739,7 @@ export default function TeacherDashboard() {
                                     handleEditPost(post);
                                     setPostActionMenu(null);
                                   }}
-                                  className="block w-full text-left px-4 py-2 hover:bg-blue-50 border-b"
+                                  className="block w-full text-left px-4 py-2 hover:bg-blue-50 border-b transition"
                                 >
                                   ✏️ Edit
                                 </button>
@@ -898,7 +929,7 @@ export default function TeacherDashboard() {
                 <button type="button" onClick={closePostModal} className="flex-1 bg-gray-500 text-white py-2 rounded hover:bg-gray-600">
                   Cancel
                 </button>
-                <button type="submit" className="flex-1 bg-indigo-600 text-white py-2 rounded hover:bg-indigo-700">
+                <button type="submit" className="flex-1 bg-indigo-400 text-white py-2 rounded hover:bg-indigo-500 shadow-sm transition">
                   {editingPostId ? 'Update Post' : 'Publish Post'}
                 </button>
               </div>

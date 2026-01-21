@@ -1,12 +1,16 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { UserContext } from "../../context/UserContext";
 import { PostsContext } from "../../context/PostsContext";
+import { ProfileSkeleton, PostSkeleton, UserProfileMini } from "../../components/LoadingSkeleton";
 
 export default function StudentProfile() {
   const { user, updateUser } = useContext(UserContext) || {};
-  const { getPostsByUser, toggleLike, toggleFavorite, addComment } =
+  const { posts = [], toggleLike, toggleFavorite, addComment, updateUserInPosts } =
     useContext(PostsContext) || {};
   const [isEditing, setIsEditing] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoadingPosts, setIsLoadingPosts] = useState(true);
+  const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
   const [formData, setFormData] = useState({
     name: user?.name || "",
     phone: user?.phone || "",
@@ -17,8 +21,41 @@ export default function StudentProfile() {
     classSection: user?.classSection || "",
   });
 
-  const userPosts =
-    user && getPostsByUser ? getPostsByUser(user.email || user.id) : [];
+  // Get favorite posts for the student
+  const userId = user?.email || user?.id;
+  const favoritePosts = posts.filter(post => 
+    post.favoritedBy && post.favoritedBy.includes(userId)
+  );
+
+  // Simulate loading effect (like Facebook)
+  useEffect(() => {
+    setIsLoading(true);
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [user?.email]);
+
+  // Loading effect for favorite posts
+  useEffect(() => {
+    setIsLoadingPosts(true);
+    setIsLoadingProfiles(true);
+    const postsTimer = setTimeout(() => {
+      setIsLoadingPosts(false);
+    }, 800);
+    const profilesTimer = setTimeout(() => {
+      setIsLoadingProfiles(false);
+    }, 600);
+    return () => {
+      clearTimeout(postsTimer);
+      clearTimeout(profilesTimer);
+    };
+  }, [favoritePosts.length]);
+
+  // Show loading skeleton
+  if (isLoading) {
+    return <ProfileSkeleton />;
+  }
 
   if (!user) {
     return (
@@ -46,6 +83,10 @@ export default function StudentProfile() {
 
   const handleSave = () => {
     updateUser(formData);
+    // Update user info in all their posts
+    if (updateUserInPosts) {
+      updateUserInPosts(user.email || user.id, formData);
+    }
     setIsEditing(false);
   };
 
@@ -101,7 +142,7 @@ export default function StudentProfile() {
             {!isEditing ? (
               <button
                 onClick={() => setIsEditing(true)}
-                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+                className="bg-blue-400 text-white px-4 py-2 rounded hover:bg-blue-500 shadow-sm transition"
               >
                 Edit Profile
               </button>
@@ -109,7 +150,7 @@ export default function StudentProfile() {
               <div className="flex gap-2">
                 <button
                   onClick={handleSave}
-                  className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+                  className="bg-emerald-400 text-white px-4 py-2 rounded hover:bg-emerald-500 shadow-sm transition"
                 >
                   Save
                 </button>
@@ -219,39 +260,50 @@ export default function StudentProfile() {
           </div>
         </div>
 
-        {/* My Posts Section */}
+        {/* My Favorite Posts Section */}
         <div className="bg-white p-6 rounded-lg shadow">
-          <h2 className="text-2xl font-bold mb-6">My Posts</h2>
+          <h2 className="text-2xl font-bold mb-6">⭐ My Favorite Posts</h2>
 
-          {userPosts.length > 0 ? (
+          {isLoadingPosts ? (
+            <>
+              <PostSkeleton />
+              <PostSkeleton />
+            </>
+          ) : favoritePosts.length > 0 ? (
             <div className="space-y-6">
-              {userPosts.map((post) => (
+              {favoritePosts.map((post) => (
                 <div
                   key={post.id}
                   className="bg-gray-50 border border-gray-200 rounded-lg p-6"
                 >
                   {/* Post Header */}
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-                      {post.poster?.avatar ? (
-                        <img
-                          src={post.poster.avatar}
-                          alt="avatar"
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <span>{(post.poster?.name || "A")[0]}</span>
-                      )}
+                  {isLoadingProfiles ? (
+                    <div className="mb-4">
+                      <UserProfileMini showTime={true} />
                     </div>
-                    <div>
-                      <div className="font-semibold">
-                        {post.poster?.name || "Anonymous"}
+                  ) : (
+                    <div className="flex items-center gap-3 mb-4">
+                      <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
+                        {post.poster?.avatar ? (
+                          <img
+                            src={post.poster.avatar}
+                            alt="avatar"
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <span>{(post.poster?.name || "A")[0]}</span>
+                        )}
                       </div>
-                      <div className="text-xs text-gray-500">
-                        {new Date(post.timestamp).toLocaleString()}
+                      <div>
+                        <div className="font-semibold">
+                          {post.poster?.name || "Anonymous"}
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          {new Date(post.timestamp).toLocaleString()}
+                        </div>
                       </div>
                     </div>
-                  </div>
+                  )}
 
                   {/* Post Content */}
                   <h3 className="text-lg font-bold mb-2">{post.title}</h3>
@@ -330,8 +382,10 @@ export default function StudentProfile() {
               ))}
             </div>
           ) : (
-            <div className="text-center text-gray-500">
-              No posts yet. Share your first post!
+            <div className="text-center py-12 bg-gray-50 rounded-lg">
+              <div className="text-6xl mb-4">⭐</div>
+              <p className="text-gray-600 text-lg">No favorite posts yet</p>
+              <p className="text-gray-400 text-sm mt-2">Click the star icon on posts to add them to your favorites</p>
             </div>
           )}
         </div>

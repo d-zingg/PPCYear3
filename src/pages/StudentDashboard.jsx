@@ -1,10 +1,11 @@
-import React, { useState, useContext } from 'react'
+import React, { useState, useContext, useEffect } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { UserContext } from '../context/UserContext'
 import { ClassesContext } from '../context/ClassesContext'
 import { PostsContext } from '../context/PostsContext'
 import { AssignmentsContext } from '../context/AssignmentsContext'
 import ClassManagementEnhanced from '../features/admin/ClassManagementEnhanced'
+import { UserProfileMini } from '../components/LoadingSkeleton'
 
 export default function StudentDashboard() {
   // StudentDashboard: dashboard for students with navbar, sidebar, and main content.
@@ -24,7 +25,17 @@ export default function StudentDashboard() {
   const [submissionModal, setSubmissionModal] = useState(null)
   const [submissionFormData, setSubmissionFormData] = useState({ answer: '', file: null, filePreview: '' })
   const [toast, setToast] = useState('')
+  const [isLoadingProfiles, setIsLoadingProfiles] = useState(true)
   const fileInputRef = React.useRef(null)
+
+  // Loading effect for profiles
+  useEffect(() => {
+    setIsLoadingProfiles(true)
+    const timer = setTimeout(() => {
+      setIsLoadingProfiles(false)
+    }, 600)
+    return () => clearTimeout(timer)
+  }, [posts.length])
 
   const showToast = (message) => {
     setToast(message)
@@ -102,7 +113,7 @@ export default function StudentDashboard() {
                               <div className="flex gap-2">
                                 <button
                                   onClick={() => openSubmissionModal(assignment)}
-                                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-semibold transition"
+                                  className="bg-blue-400 hover:bg-blue-500 text-white px-4 py-2 rounded-lg font-semibold transition shadow-sm"
                                 >
                                   📤 {getStudentSubmission?.(assignment.id, user?.email) ? 'Update Submission' : 'Submit'}
                                 </button>
@@ -293,7 +304,7 @@ export default function StudentDashboard() {
         <div className="flex items-center gap-4">
           <Link
             to="/userHome"
-            className="bg-indigo-500 hover:bg-indigo-600 text-white px-4 py-2 rounded transition font-semibold"
+            className="bg-indigo-400 hover:bg-indigo-500 text-white px-4 py-2 rounded transition font-semibold shadow-sm"
             title="Go to Home Dashboard"
           >
             🏠 Home
@@ -388,24 +399,30 @@ export default function StudentDashboard() {
                 <div className="space-y-4">
                   {userPosts.map(post => (
                     <div key={post.id} className="bg-white p-6 rounded-lg shadow border">
-                      <div className="flex items-center gap-3 mb-3">
-                        <button
-                          onClick={() => navigate(`/profile/${post.poster?.email || post.poster?.id}`)}
-                          className="flex items-center gap-3 hover:opacity-80 cursor-pointer"
-                        >
-                          {post.poster?.avatar ? (
-                            <img src={post.poster.avatar} alt={post.poster.name} className="w-10 h-10 rounded-full object-cover" />
-                          ) : (
-                            <div className="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center text-sm font-bold">
-                              {post.poster?.name?.[0] || 'S'}
+                      {isLoadingProfiles ? (
+                        <div className="mb-3">
+                          <UserProfileMini showTime={true} />
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-3 mb-3">
+                          <button
+                            onClick={() => navigate(`/profile/${post.poster?.email || post.poster?.id}`)}
+                            className="flex items-center gap-3 hover:opacity-80 cursor-pointer"
+                          >
+                            {post.poster?.avatar ? (
+                              <img src={post.poster.avatar} alt={post.poster.name} className="w-10 h-10 rounded-full object-cover" />
+                            ) : (
+                              <div className="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center text-sm font-bold">
+                                {post.poster?.name?.[0] || 'S'}
+                              </div>
+                            )}
+                            <div className="text-left">
+                              <p className="font-semibold text-blue-600 hover:text-blue-800">{post.poster?.name || 'Student'}</p>
+                              <p className="text-xs text-gray-500">{post.timestamp ? new Date(post.timestamp).toLocaleDateString() : 'Recently'}</p>
                             </div>
-                          )}
-                          <div className="text-left">
-                            <p className="font-semibold text-blue-600 hover:text-blue-800">{post.poster?.name || 'Student'}</p>
-                            <p className="text-xs text-gray-500">{post.timestamp ? new Date(post.timestamp).toLocaleDateString() : 'Recently'}</p>
-                          </div>
-                        </button>
-                      </div>
+                          </button>
+                        </div>
+                      )}
                       <h4 className="font-bold text-gray-900 mb-2">{post.title}</h4>
                       <p className="text-gray-700 mb-3">{post.description}</p>
                       {post.image && <img src={post.image} alt="post" className="w-full h-48 object-cover rounded mb-3" />}
@@ -528,7 +545,7 @@ export default function StudentDashboard() {
                 <button type="button" onClick={closeSubmissionModal} className="flex-1 bg-gray-500 text-white py-2 rounded-lg hover:bg-gray-600 transition font-semibold">
                   Cancel
                 </button>
-                <button type="submit" className="flex-1 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-semibold">
+                <button type="submit" className="flex-1 bg-blue-400 text-white py-2 rounded-lg hover:bg-blue-500 transition font-semibold shadow-sm">
                   ✅ Submit Assignment
                 </button>
               </div>

@@ -1,7 +1,8 @@
-import React, { useState, useContext } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { PostsContext } from "../context/PostsContext";
 import { UserContext } from "../context/UserContext";
+import { PostSkeleton, UserProfileMini } from "../components/LoadingSkeleton";
 
 export default function UserHome() {
   const navigate = useNavigate();
@@ -12,6 +13,8 @@ export default function UserHome() {
 
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isLoadingPosts, setIsLoadingPosts] = useState(true);
+  const [isLoadingProfiles, setIsLoadingProfiles] = useState(true);
 
   const currentUser = {
     id: user?.email || user?.id || "current-user",
@@ -55,16 +58,32 @@ export default function UserHome() {
     return inTitle || inDesc || inPoster || inComments;
   });
 
+  // Simulate loading effect for posts
+  useEffect(() => {
+    setIsLoadingPosts(true);
+    setIsLoadingProfiles(true);
+    const postsTimer = setTimeout(() => {
+      setIsLoadingPosts(false);
+    }, 800);
+    const profilesTimer = setTimeout(() => {
+      setIsLoadingProfiles(false);
+    }, 600);
+    return () => {
+      clearTimeout(postsTimer);
+      clearTimeout(profilesTimer);
+    };
+  }, [posts.length, searchQuery]);
+
   return (
     <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-50 via-blue-50 to-purple-50">
       {/* Navbar */}
       <nav className="bg-white/80 backdrop-blur-md border-b border-gray-200/50 px-8 py-4 flex items-center justify-between shadow-sm sticky top-0 z-50">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
+          <div className="w-12 h-12 bg-gradient-to-br from-blue-400 to-purple-500 rounded-xl flex items-center justify-center shadow-lg transform hover:scale-105 transition-transform">
             <span className="text-2xl text-white font-bold">P</span>
           </div>
           <div>
-            <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">PPC</div>
+            <div className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">PPC</div>
             <div className="text-xs text-gray-500 font-medium">Community Hub</div>
           </div>
         </div>
@@ -88,7 +107,7 @@ export default function UserHome() {
         <div className="flex items-center gap-3">
           <button
             onClick={goToRoleDashboard}
-            className="px-4 py-2.5 rounded-lg bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-medium transition-all hover:shadow-lg transform hover:scale-105"
+            className="px-4 py-2.5 rounded-lg bg-gradient-to-r from-blue-400 to-purple-500 hover:from-blue-500 hover:to-purple-600 text-white font-medium transition-all hover:shadow-lg transform hover:scale-105"
           >
             🏠 My Dashboard
           </button>
@@ -144,7 +163,7 @@ export default function UserHome() {
       {/* Content */}
       <div className="flex-1 p-8 max-w-4xl mx-auto w-full">
         <div className="mb-8">
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent mb-2">Welcome Back</h1>
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent mb-2">Welcome Back</h1>
         </div>
 
         <div className="flex items-center justify-between mb-6">
@@ -158,36 +177,51 @@ export default function UserHome() {
 
         {filteredPosts.length > 0 ? (
           <div className="space-y-6">
-            {filteredPosts.map((post) => (
+            {isLoadingPosts ? (
+              // Show loading skeletons
+              <>
+                <PostSkeleton />
+                <PostSkeleton />
+                <PostSkeleton />
+              </>
+            ) : (
+              // Show actual posts
+              filteredPosts.map((post) => (
               <div
                 key={post.id}
                 className="bg-white/70 backdrop-blur-sm border border-gray-200/50 rounded-2xl shadow-lg hover:shadow-xl p-6 transition-all transform hover:scale-[1.01]"
               >
                 {/* Poster */}
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center overflow-hidden shadow-md">
-                    {post.poster?.avatar ? (
-                      <img
-                        src={post.poster.avatar}
-                        alt="avatar"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <span className="font-bold text-blue-600">{(post.poster?.name || "A")[0]}</span>
-                    )}
+                {isLoadingProfiles ? (
+                  <div className="mb-4">
+                    <UserProfileMini showTime={true} />
                   </div>
-                  <div className="flex-1">
-                    <button
-                      onClick={() => navigate(`/profile/${post.poster?.email || post.poster?.id}`)}
-                      className="font-semibold text-gray-800 hover:text-blue-600 text-left cursor-pointer transition-colors"
-                    >
-                      {post.poster?.name || "Anonymous"}
-                    </button>
-                    <div className="text-sm text-gray-500">
-                      {new Date(post.timestamp).toLocaleString()}
+                ) : (
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center overflow-hidden shadow-md">
+                      {post.poster?.avatar ? (
+                        <img
+                          src={post.poster.avatar}
+                          alt="avatar"
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <span className="font-bold text-blue-600">{(post.poster?.name || "A")[0]}</span>
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <button
+                        onClick={() => navigate(`/profile/${post.poster?.email || post.poster?.id}`)}
+                        className="font-semibold text-gray-800 hover:text-blue-600 text-left cursor-pointer transition-colors"
+                      >
+                        {post.poster?.name || "Anonymous"}
+                      </button>
+                      <div className="text-sm text-gray-500">
+                        {new Date(post.timestamp).toLocaleString()}
+                      </div>
                     </div>
                   </div>
-                </div>
+                )}
 
                 {/* Content */}
                 <h3 className="text-xl font-bold mb-2 text-gray-900">{post.title}</h3>
@@ -228,7 +262,7 @@ export default function UserHome() {
                           author: currentUser
                         });
                     }}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-green-50 text-gray-700 hover:text-green-600 transition-colors font-medium"
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg hover:bg-emerald-50 text-gray-700 hover:text-emerald-600 transition-colors font-medium"
                   >
                     💬 <span>{(post.comments || []).length}</span>
                   </button>
@@ -255,7 +289,8 @@ export default function UserHome() {
                   </div>
                 )}
               </div>
-            ))}
+            ))
+            )}
           </div>
         ) : (
           <div className="text-center py-16">

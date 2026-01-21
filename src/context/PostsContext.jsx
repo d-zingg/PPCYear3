@@ -8,7 +8,28 @@ export function PostsProvider({ children }) {
   /* LOAD POSTS FROM LOCAL STORAGE */
   useEffect(() => {
     const saved = JSON.parse(localStorage.getItem("posts"));
-    if (saved) setPosts(saved);
+    if (saved) {
+      // Sync posts with latest user data from users database
+      const users = JSON.parse(localStorage.getItem("ppc_users") || "[]");
+      const syncedPosts = saved.map(post => {
+        const posterId = post.poster?.id || post.poster?.email;
+        const userData = users.find(u => (u.userId || u.id || u.email) === posterId);
+        
+        if (userData) {
+          return {
+            ...post,
+            poster: {
+              ...post.poster,
+              name: userData.name || post.poster?.name,
+              avatar: userData.profileImage || post.poster?.avatar,
+              profileImage: userData.profileImage || post.poster?.profileImage,
+            }
+          };
+        }
+        return post;
+      });
+      setPosts(syncedPosts);
+    }
   }, []);
 
   /* SAVE POSTS TO LOCAL STORAGE */
@@ -113,6 +134,28 @@ export function PostsProvider({ children }) {
     });
   };
 
+  /* UPDATE USER INFO IN ALL POSTS */
+  const updateUserInPosts = (userId, updatedUserData) => {
+    setPosts((prev) =>
+      prev.map((post) => {
+        const posterId = post.poster?.id || post.poster?.email;
+        if (posterId === userId) {
+          const newAvatar = updatedUserData.profileImage || updatedUserData.avatar;
+          return {
+            ...post,
+            poster: {
+              ...post.poster,
+              name: updatedUserData.name || post.poster.name,
+              avatar: newAvatar,
+              profileImage: newAvatar,
+            }
+          };
+        }
+        return post;
+      })
+    );
+  };
+
   return (
     <PostsContext.Provider
       value={{
@@ -123,6 +166,7 @@ export function PostsProvider({ children }) {
         toggleFavorite,
         addComment,
         getPostsByUser,
+        updateUserInPosts,
       }}
     >
       {children}

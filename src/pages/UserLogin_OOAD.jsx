@@ -9,7 +9,7 @@ import { UserContext } from "../context/UserContext";
 
 export default function UserLogin() {
   const navigate = useNavigate();
-  const { signIn, register, services } = useContext(UserContext);
+  const { signIn, register } = useContext(UserContext);
 
   // Mode toggle
   const [isLoginMode, setIsLoginMode] = useState(true);
@@ -96,11 +96,11 @@ export default function UserLogin() {
     registrationData.schoolName;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 p-4">
-      <div className="bg-white p-8 rounded-2xl shadow-2xl w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-cyan-50 to-purple-50 p-4">
+      <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-6">
-          <div className="inline-block p-3 bg-blue-100 rounded-full mb-3">
+          <div className="inline-block p-3 bg-blue-50 rounded-full mb-3">
             <span className="text-4xl">🎓</span>
           </div>
           <h2 className="text-3xl font-bold text-gray-800">Welcome to PPC</h2>
@@ -119,8 +119,8 @@ export default function UserLogin() {
             }}
             className={`flex-1 py-2 px-4 rounded-lg font-medium transition ${
               isLoginMode
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-blue-400 text-white shadow-sm'
+                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
             }`}
           >
             Login
@@ -133,8 +133,8 @@ export default function UserLogin() {
             }}
             className={`flex-1 py-2 px-4 rounded-lg font-medium transition ${
               !isLoginMode
-                ? 'bg-blue-600 text-white'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? 'bg-blue-400 text-white shadow-sm'
+                : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
             }`}
           >
             Register
@@ -143,8 +143,8 @@ export default function UserLogin() {
 
         {/* Error Message */}
         {error && (
-          <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg">
-            <p className="text-sm text-red-600">{error}</p>
+          <div className="mb-4 p-3 bg-red-50 border border-red-100 rounded-lg">
+            <p className="text-sm text-red-500">{error}</p>
           </div>
         )}
 
@@ -164,8 +164,8 @@ export default function UserLogin() {
                     onClick={() => setLoginData({ ...loginData, role })}
                     className={`py-2 px-3 rounded-lg border-2 font-medium transition ${
                       loginData.role === role
-                        ? 'border-blue-600 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-blue-400 bg-blue-50 text-blue-600'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                     }`}
                   >
                     {role.charAt(0).toUpperCase() + role.slice(1)}
@@ -183,7 +183,7 @@ export default function UserLogin() {
                 type="email"
                 value={loginData.email}
                 onChange={(e) => setLoginData({ ...loginData, email: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                 placeholder="your@email.com"
                 required
               />
@@ -199,7 +199,7 @@ export default function UserLogin() {
                   type={showPassword ? 'text' : 'password'}
                   value={loginData.password}
                   onChange={(e) => setLoginData({ ...loginData, password: e.target.value })}
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                   placeholder="••••••••"
                   required
                 />
@@ -217,7 +217,7 @@ export default function UserLogin() {
             <button
               type="submit"
               disabled={!isLoginValid || loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+              className="w-full bg-blue-400 text-white py-3 rounded-lg font-medium hover:bg-blue-500 disabled:bg-gray-200 disabled:cursor-not-allowed transition shadow-sm"
             >
               {loading ? 'Signing in...' : 'Sign In'}
             </button>
@@ -240,8 +240,8 @@ export default function UserLogin() {
                     onClick={() => setRegistrationData({ ...registrationData, role })}
                     className={`py-2 px-3 rounded-lg border-2 font-medium transition ${
                       registrationData.role === role
-                        ? 'border-blue-600 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-blue-400 bg-blue-50 text-blue-600'
+                        : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
                     }`}
                   >
                     {role.charAt(0).toUpperCase() + role.slice(1)}
@@ -259,7 +259,7 @@ export default function UserLogin() {
                 type="text"
                 value={registrationData.name}
                 onChange={(e) => setRegistrationData({ ...registrationData, name: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                 placeholder="John Doe"
                 required
               />
@@ -274,7 +274,7 @@ export default function UserLogin() {
                 type="text"
                 value={registrationData.schoolName}
                 onChange={(e) => setRegistrationData({ ...registrationData, schoolName: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                 placeholder="School Name"
                 required
               />
@@ -289,7 +289,7 @@ export default function UserLogin() {
                 type="email"
                 value={registrationData.email}
                 onChange={(e) => setRegistrationData({ ...registrationData, email: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                 placeholder="your@email.com"
                 required
               />
@@ -304,7 +304,7 @@ export default function UserLogin() {
                 type="tel"
                 value={registrationData.phone}
                 onChange={(e) => setRegistrationData({ ...registrationData, phone: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                 placeholder="+123 456 7890"
               />
             </div>
@@ -318,7 +318,7 @@ export default function UserLogin() {
                 type={showPassword ? 'text' : 'password'}
                 value={registrationData.password}
                 onChange={(e) => setRegistrationData({ ...registrationData, password: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                 placeholder="At least 6 characters"
                 required
               />
@@ -334,7 +334,7 @@ export default function UserLogin() {
                 type={showPassword ? 'text' : 'password'}
                 value={registrationData.confirmPassword}
                 onChange={(e) => setRegistrationData({ ...registrationData, confirmPassword: e.target.value })}
-                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-transparent"
                 placeholder="Repeat password"
                 required
               />
@@ -362,7 +362,7 @@ export default function UserLogin() {
             <button
               type="submit"
               disabled={!isRegistrationValid || loading}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition"
+              className="w-full bg-blue-400 text-white py-3 rounded-lg font-medium hover:bg-blue-500 disabled:bg-gray-200 disabled:cursor-not-allowed transition shadow-sm"
             >
               {loading ? 'Creating account...' : 'Create Account'}
             </button>
